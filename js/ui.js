@@ -142,14 +142,31 @@ function openWorkoutModal(key) {
 
     workoutModalTitle.textContent = data.title;
 
-    let bodyContent = '<ul class="space-y-3 list-disc list-inside text-gray-700">';
-    data.exercises.forEach(exercise => {
-        bodyContent += `<li class="text-lg">${exercise}</li>`;
-    });
-    bodyContent += '</ul>';
+    // Start building the HTML content with a container for better spacing
+    let bodyContent = '<div class="space-y-6">';
 
+    // Iterate over each exercise object in the new data structure
+    data.exercises.forEach(exercise => {
+        bodyContent += `
+        <div>
+            <h3 class="text-lg font-semibold text-gray-800">${exercise.name}</h3>`;
+
+        // Check if there are sub-steps and add them as a nested list
+        if (exercise.steps && exercise.steps.length > 0) {
+            bodyContent += '<ul class="mt-2 space-y-1 list-disc list-inside text-gray-600 pl-2">';
+            exercise.steps.forEach(step => {
+                bodyContent += `<li class="text-base">${step}</li>`;
+            });
+            bodyContent += '</ul>';
+        }
+        bodyContent += `</div>`;
+    });
+
+    bodyContent += '</div>'; // Close the main container
+
+    // Add the overall workout details at the bottom with a separator
     if (data.details) {
-        bodyContent += `<p class="mt-4 pt-4 border-t border-gray-200 text-gray-600">${data.details}</p>`;
+        bodyContent += `<p class="mt-6 pt-4 border-t border-gray-200 text-gray-500 italic">${data.details}</p>`;
     }
 
     workoutModalBody.innerHTML = bodyContent;
