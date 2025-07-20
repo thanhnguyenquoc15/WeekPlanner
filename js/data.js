@@ -181,7 +181,7 @@ export const scheduleData = {
         { time: "7:00 AM", activity: "Wake & Hydrate", details: "Maintain wake-up time. Drink 350ml of water." },
         { time: "7:30 AM", activity: "Coffee & Slow Morning", details: "No rush. Enjoy." },
         { time: "10:30 AM", activity: "Brunch / Meal", details: "First meal of the day." },
-        { time: "12:00 PM", activity: "Active Recovery", details: "Long, slow walk. Light movement." },
+        { time: "12:00 PM", activity: "Active Recovery", details: "Long nap and low-energy activities." },
         { time: "3:50 PM", activity: "Pre-Workout Prep", details: "Prepare Whey Protein & Creatine shake." },
         { time: "4:00 PM", activity: "Running: Easy Run", details: "40 minutes, relaxed pace.", workoutKey: "easyRun" },
         { time: "4:40 PM", activity: "Post-Run Recovery and commute", details: "Drink pre-made shake. Commute home and shower." },
