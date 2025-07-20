@@ -42,10 +42,16 @@ body {
 }
 
 #quote-display {
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out, transform 0.3s ease-in-out;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
   text-align: center;
+}
+
+#quote-display:empty {
+  transform: scale(0.8);
+  opacity: 0;
+  height: 0;
 }
