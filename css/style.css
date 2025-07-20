@@ -1,0 +1,46 @@
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F8FAFC;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 320px;
+  max-height: 350px;
+}
+
+@media (min-width: 768px) {
+  .chart-container {
+    height: 350px;
+    max-height: 400px;
+  }
+}
+
+/* Modal Styling for smoother transitions */
+.modal {
+  transition: opacity 0.25s ease-in-out;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal .modal-content {
+  transition: transform 0.25s ease-in-out;
+  transform: scale(0.95);
+}
+
+.modal.is-open .modal-content {
+  transform: scale(1);
+}
+
+#quote-display {
+  transition: opacity 0.5s ease-in-out;
+}

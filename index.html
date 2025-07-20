@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monk Mode: Interactive Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="text-gray-800">
+
+  <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+
+    <header class="text-center mb-12">
+      <h1 class="text-4xl md:text-6xl font-black" style="color: #7542A8;">MONK MODE</h1>
+      <p class="text-lg md:text-xl text-gray-600 mt-2">The Architecture of Discipline: July 21st - 27th</p>
+    </header>
+
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-center mb-4" style="color: #7542A8;">Weekly Calendar</h2>
+      <div id="calendar-nav"
+        class="flex justify-center space-x-1 md:space-x-2 bg-white p-3 rounded-xl shadow-md max-w-lg mx-auto">
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="text-5xl font-bold" style="color: #00A6ED;">40</div>
+          <p class="text-gray-600 mt-2">Hours of Deep Work</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="text-5xl font-bold" style="color: #F73B74;">7.5</div>
+          <p class="text-gray-600 mt-2">Hours of Focused Learning</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="text-5xl font-bold" style="color: #F7941D;">6</div>
+          <p class="text-gray-600 mt-2">Targeted Training Sessions</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-16">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 id="daily-blueprint-title" class="text-2xl font-bold text-center mb-6" style="color: #7542A8;">The Daily
+          Blueprint</h2>
+        <div id="daily-blueprint-content"
+          class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+          </div>
+        <p class="text-center text-gray-600 mt-4">This consistent daily rhythm minimizes decision fatigue and builds
+          powerful momentum throughout the week.</p>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white rounded-lg shadow-md p-6 flex flex-col">
+        <h2 class="text-2xl font-bold text-center mb-2" style="color: #7542A8;">Weekly Effort Distribution</h2>
+        <p class="text-center text-gray-600 mb-4">This chart shows how your 53.5 active hours are allocated across your
+          core pillars of progress.</p>
+        <div class="chart-container flex-grow">
+          <canvas id="effortDonutChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6 flex flex-col">
+        <h2 class="text-2xl font-bold text-center mb-2" style="color: #7542A8;">Weekly Training Intensity</h2>
+        <p class="text-center text-gray-600 mb-4">Visualize the balance between strength and running focus each day,
+          with rest days resetting intensity to zero.</p>
+        <div class="chart-container flex-grow">
+          <canvas id="intensityRadarChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2 flex flex-col">
+        <h2 class="text-2xl font-bold text-center mb-2" style="color: #7542A8;">Weekly Workout Schedule</h2>
+        <p class="text-center text-gray-600 mb-4">A clear view of your training plan, showing the type and focus of each
+          workout scheduled for the week.</p>
+        <div class="w-full max-w-4xl mx-auto h-96 max-h-[400px] relative">
+          <canvas id="workoutBarChart"></canvas>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+        <h2 class="text-2xl font-bold text-center mb-6" style="color: #7542A8;">Nutrition & Recovery Protocol</h2>
+        <ul class="space-y-4 max-w-2xl mx-auto">
+          <li class="flex items-start">
+            <span class="text-2xl mr-4" style="color: #00A6ED;">⏱️</span>
+            <div>
+              <h3 class="font-bold">Intermittent Fasting</h3>
+              <p class="text-gray-600">12:00 PM - 8:00 PM eating window to enhance focus and metabolic health. Mornings
+                are for coffee and water only.</p>
+            </div>
+          </li>
+          <li class="flex items-start">
+            <span class="text-2xl mr-4" style="color: #F7941D;">💧</span>
+            <div>
+              <h3 class="font-bold">Strategic Hydration</h3>
+              <p class="text-gray-600">Minimum of 3-4 liters of water daily. Consistent hydration is critical,
+                especially with creatine supplementation.</p>
+            </div>
+          </li>
+          <li class="flex items-start">
+            <span class="text-2xl mr-4" style="color: #F73B74;">💪</span>
+            <div>
+              <h3 class="font-bold">Targeted Supplementation</h3>
+              <p class="text-gray-600"><span class="font-semibold">Creatine (5g):</span> Daily for strength. <span
+                  class="font-semibold">Whey:</span> Post-workout for rapid recovery. <span
+                  class="font-semibold">Casein:</span> Pre-sleep for overnight muscle repair.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="text-center mt-12 py-6 border-t">
+      <p class="text-gray-600">Consistency is the engine of achievement. Trust the process.</p>
+    </footer>
+  </div>
+
+  <div id="schedule-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+    <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white p-4 border-b z-10">
+        <div class="flex justify-between items-center mb-4">
+          <h2 id="modal-title" class="text-2xl font-bold" style="color: #7542A8;"></h2>
+          <button id="modal-close" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+          <div id="modal-progress-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-500"
+            style="width: 0%"></div>
+        </div>
+        <div id="quote-display" class="text-center text-gray-600 italic opacity-0 transition-opacity duration-500" style="min-height: 2.5em;"></div>
+      </div>
+      <div id="modal-body" class="p-6">
+      </div>
+    </div>
+  </div>
+
+  <div id="workout-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+    <div class="modal-content bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+        <h2 id="workout-modal-title" class="text-2xl font-bold" style="color: #7542A8;"></h2>
+        <button id="workout-modal-close" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+      </div>
+      <div id="workout-modal-body" class="p-6">
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
