@@ -43,4 +43,9 @@ body {
 
 #quote-display {
   transition: opacity 0.5s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
 }

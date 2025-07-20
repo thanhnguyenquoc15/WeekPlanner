@@ -63,7 +63,7 @@ function createIntensityRadarChart() {
       datasets: [
         {
           label: 'Running Intensity',
-          data: [2, 8, 2, 7, 2, 8, 5],
+          data: [2, 8, 2, 7, 2, 10, 5],
           fill: true,
           backgroundColor: 'rgba(247, 59, 116, 0.2)',
           borderColor: COLORS.pink,
