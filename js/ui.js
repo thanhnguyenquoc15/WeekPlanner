@@ -129,11 +129,13 @@ function openScheduleModal(day) {
     scheduleModalBody.innerHTML = bodyContent;
 
     updateProgress(day);
+    document.body.classList.add('body-no-scroll'); 
     scheduleModal.classList.add('is-open');
 };
 
 function closeScheduleModal() {
     scheduleModal.classList.remove('is-open');
+    document.body.classList.remove('body-no-scroll');
 };
 
 function openWorkoutModal(key) {
@@ -170,11 +172,13 @@ function openWorkoutModal(key) {
     }
 
     workoutModalBody.innerHTML = bodyContent;
+    document.body.classList.add('body-no-scroll');
     workoutModal.classList.add('is-open');
 };
 
 function closeWorkoutModal() {
     workoutModal.classList.remove('is-open');
+    document.body.classList.remove('body-no-scroll');
 };
 
 function setupEventListeners() {

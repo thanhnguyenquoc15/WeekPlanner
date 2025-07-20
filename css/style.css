@@ -27,6 +27,10 @@ body {
   pointer-events: none;
 }
 
+.body-no-scroll {
+  overflow: hidden;
+}
+
 .modal.is-open {
   opacity: 1;
   pointer-events: auto;
