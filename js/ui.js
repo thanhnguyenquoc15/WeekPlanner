@@ -1,5 +1,6 @@
 import { getRandomQuote } from './quotes.js';
-import { scheduleData, workoutDetails } from './data.js';
+import { scheduleData } from './data.js';
+import { workoutDetails } from './exercises.js';
 
 const COLORS = {
     purple: '#7542A8',
