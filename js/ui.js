@@ -44,10 +44,17 @@ function updateDailyBlueprint(day) {
     const usedIndices = new Set();
 
     keyEventMatchers.forEach(matcher => {
-        const foundEvent = data.schedule.find((item, index) => !usedIndices.has(index) && matcher(item));
-        if (foundEvent) {
+        let foundIndex = -1;
+        const foundEvent = data.schedule.find((item, index) => {
+            if (!usedIndices.has(index) && matcher(item)) {
+                foundIndex = index;
+                return true;
+            }
+            return false;
+        });
+        if (foundEvent && foundIndex !== -1) {
             milestones.push(foundEvent);
-            usedIndices.add(data.schedule.indexOf(foundEvent));
+            usedIndices.add(foundIndex);
         }
     });
 
@@ -63,8 +70,13 @@ function updateDailyBlueprint(day) {
 };
 
 function getProgress(day) {
-    const stored = localStorage.getItem(`progress_${day}`);
-    return stored ? JSON.parse(stored) : [];
+    try {
+        const stored = localStorage.getItem(`progress_${day}`);
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        console.error(`Failed to parse progress for ${day}`, e);
+        return [];
+    }
 };
 
 function saveProgress(day, progress) {
@@ -135,6 +147,7 @@ function openScheduleModal(day) {
 };
 
 function closeScheduleModal() {
+    clearTimeout(quoteTimeout);
     scheduleModal.classList.remove('is-open');
     document.body.classList.remove('body-no-scroll');
 };
@@ -179,7 +192,9 @@ function openWorkoutModal(key) {
 
 function closeWorkoutModal() {
     workoutModal.classList.remove('is-open');
-    document.body.classList.remove('body-no-scroll');
+    if (!scheduleModal.classList.contains('is-open')) {
+        document.body.classList.remove('body-no-scroll');
+    }
 };
 
 function setupEventListeners() {
@@ -212,11 +227,20 @@ function setupEventListeners() {
 
 export function initUI() {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const dayAbbr = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const dayAbbr = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
     const today = new Date();
     const dayOfWeek = today.getDay();
     const adjustedIndex = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
     const todayName = days[adjustedIndex];
+
+    // Set dynamic week range label
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - adjustedIndex);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const weekLabel = document.getElementById('week-range-label');
+    if (weekLabel) weekLabel.textContent = `The Architecture of Discipline: ${fmt(monday)} – ${fmt(sunday)}`;
 
     days.forEach((day, index) => {
         const button = document.createElement('button');
