@@ -1,61 +1,169 @@
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #F8FAFC;
 }
 
+/* ── Brand purple (light / dark) ─────────────────────────────────── */
+.text-purple-brand        { color: #7542A8; }
+.dark .text-purple-brand  { color: #a78bfa; }
+
+/* ── Shared card ─────────────────────────────────────────────────── */
+.planner-card {
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  padding: 1.5rem;
+}
+.dark .planner-card {
+  background: #1f2937; /* gray-800 */
+  border-color: #374151; /* gray-700 */
+}
+
+/* ── App tab buttons ─────────────────────────────────────────────── */
+.app-tab-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #6b7280;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.app-tab-btn:hover {
+  background: rgba(117, 66, 168, 0.08);
+  color: #7542A8;
+}
+.dark .app-tab-btn:hover {
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+}
+.app-tab-btn.active {
+  background: #7542A8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(117,66,168,0.35);
+}
+.dark .app-tab-btn.active {
+  background: #7c3aed;
+}
+
+/* ── WeekPlanner calendar day buttons ───────────────────────────── */
+.day-btn {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  color: #374151;
+}
+.day-btn:hover { background: #ede9fe; }
+.dark .day-btn { color: #d1d5db; }
+.dark .day-btn:hover { background: rgba(109,40,217,0.2); }
+
+/* ── Chart container ─────────────────────────────────────────────── */
 .chart-container {
   position: relative;
   width: 100%;
   max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-  height: 320px;
+  margin: 0 auto;
+  height: 300px;
   max-height: 350px;
 }
-
 @media (min-width: 768px) {
-  .chart-container {
-    height: 350px;
-    max-height: 400px;
-  }
+  .chart-container { height: 340px; max-height: 400px; }
 }
 
-/* Modal Styling for smoother transitions */
+/* ── Daily blueprint milestones ──────────────────────────────────── */
+.blueprint-step {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  font-size: 0.875rem;
+}
+.dark .blueprint-step { background: #374151; }
+
+/* ── Schedule modal list items ───────────────────────────────────── */
+.modal-item-time   { color: #7542A8; }
+.dark .modal-item-time { color: #a78bfa; }
+
+/* ── Modal transitions ───────────────────────────────────────────── */
 .modal {
-  transition: opacity 0.25s ease-in-out;
+  transition: opacity 0.25s ease;
   opacity: 0;
   pointer-events: none;
 }
-
-.body-no-scroll {
-  overflow: hidden;
-}
-
 .modal.is-open {
   opacity: 1;
   pointer-events: auto;
 }
-
 .modal .modal-content {
-  transition: transform 0.25s ease-in-out;
-  transform: scale(0.95);
+  transition: transform 0.25s ease;
+  transform: scale(0.96);
 }
+.modal.is-open .modal-content { transform: scale(1); }
 
-.modal.is-open .modal-content {
-  transform: scale(1);
-}
+.body-no-scroll { overflow: hidden; }
 
+/* ── Quote display ───────────────────────────────────────────────── */
 #quote-display {
-  transition: opacity 0.5s ease-in-out, transform 0.3s ease-in-out;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  text-align: center;
+  transition: opacity 0.5s ease;
+  min-height: 1.5rem;
 }
 
-#quote-display:empty {
-  transform: scale(0.8);
-  opacity: 0;
-  height: 0;
+/* ── Running activity cards ──────────────────────────────────────── */
+.run-card {
+  background: rgba(31,41,55,0.7);
+  border: 1px solid rgba(75,85,99,0.3);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(8px);
+}
+.dark .run-card { background: rgba(31,41,55,0.9); }
+
+/* ── Habits list rows ────────────────────────────────────────────── */
+.habit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.dark .habit-row {
+  border-color: #374151;
+  background: rgba(55,65,81,0.4);
+}
+.habit-row:hover { background: #f3f4f6; }
+.dark .habit-row:hover { background: rgba(55,65,81,0.7); }
+.habit-row.completed {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  opacity: 0.7;
+}
+.dark .habit-row.completed {
+  background: rgba(79,70,229,0.1);
+  border-color: rgba(99,102,241,0.3);
+}
+
+/* ── Training plan week cards ────────────────────────────────────── */
+.plan-week-card {
+  background: rgba(31,41,55,0.5);
+  border: 1px solid #374151;
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.plan-week-header {
+  padding: 0.75rem 1rem;
+  background: rgba(55,65,81,0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

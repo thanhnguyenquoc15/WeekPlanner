@@ -1,268 +1,250 @@
-import { getRandomQuote } from './quotes.js';
-import { scheduleData } from './data.js';
-import { workoutDetails } from './exercises.js';
+import { getRandomQuote }    from './quotes.js';
+import { scheduleData }       from './data.js';
+import { workoutDetails }     from './exercises.js';
+import { updateChartsTheme }  from './charts.js';
 
-const COLORS = {
-    purple: '#7542A8',
-};
+// ── Dark mode ──────────────────────────────────────────────────────
+export function initDarkMode() {
+    const saved = localStorage.getItem('monk_dark_mode');
+    const isDark = saved === 'true';
+    applyDark(isDark);
 
-let quoteTimeout;
-
-// DOM Elements
-const blueprintTitle = document.getElementById('daily-blueprint-title');
-const blueprintContainer = document.getElementById('daily-blueprint-content');
-const calendarNav = document.getElementById('calendar-nav');
-// Schedule Modal
-const scheduleModal = document.getElementById('schedule-modal');
-const scheduleModalTitle = document.getElementById('modal-title');
-const scheduleModalBody = document.getElementById('modal-body');
-const scheduleModalCloseBtn = document.getElementById('modal-close');
-const scheduleProgressBar = document.getElementById('modal-progress-bar');
-const quoteDisplay = document.getElementById('quote-display');
-// Workout Modal
-const workoutModal = document.getElementById('workout-modal');
-const workoutModalTitle = document.getElementById('workout-modal-title');
-const workoutModalBody = document.getElementById('workout-modal-body');
-const workoutModalCloseBtn = document.getElementById('workout-modal-close');
-
-
-function updateDailyBlueprint(day) {
-    const data = scheduleData[day];
-    if (!data) return;
-    blueprintTitle.textContent = `${day}'s Blueprint`;
-    const keyEventMatchers = [
-      item => item.activity.includes('Wake'),
-      item => item.activity.includes('Deep Work Block 1') || item.activity.includes('Running:') || item.activity.includes('Efficient Morning'),
-      item => item.activity.includes('Lunch') || item.activity.includes('Brunch'),
-      item => item.activity.includes('Deep Work Block 2') && ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day),
-      item => item.activity.includes('Strength:') || item.activity.includes('Running:') || item.activity.includes('Dinner Party'),
-      item => item.activity.includes('Dinner') || item.activity.includes('Weekly Review') || item.activity.includes('Life Admin'),
-      item => item.activity.includes('Sleep') && ['Saturday', 'Sunday'].includes(day)
-    ];
-
-    const milestones = [];
-    const usedIndices = new Set();
-
-    keyEventMatchers.forEach(matcher => {
-        let foundIndex = -1;
-        const foundEvent = data.schedule.find((item, index) => {
-            if (!usedIndices.has(index) && matcher(item)) {
-                foundIndex = index;
-                return true;
-            }
-            return false;
-        });
-        if (foundEvent && foundIndex !== -1) {
-            milestones.push(foundEvent);
-            usedIndices.add(foundIndex);
-        }
-    });
-
-    let html = '';
-    milestones.forEach((event, index) => {
-        html += `<div class="p-3 rounded-lg bg-gray-100 w-full md:w-auto"><span class="font-bold">${event.time}</span><br>${event.activity.split(':')[0]}</div>`;
-        if (index < milestones.length - 1) {
-            html += `<div class="text-2xl font-bold" style="color: #00A6ED;">→</div>`;
-        }
-    });
-
-    blueprintContainer.innerHTML = html;
-};
-
-function getProgress(day) {
-    try {
-        const stored = localStorage.getItem(`progress_${day}`);
-        return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-        console.error(`Failed to parse progress for ${day}`, e);
-        return [];
-    }
-};
-
-function saveProgress(day, progress) {
-    localStorage.setItem(`progress_${day}`, JSON.stringify(progress));
-};
-
-function showQuote() {
-    clearTimeout(quoteTimeout);
-    quoteDisplay.textContent = getRandomQuote();
-    quoteDisplay.style.opacity = 1;
-
-    quoteTimeout = setTimeout(() => {
-        quoteDisplay.style.opacity = 0;
-    }, 60000);
-};
-
-function updateProgress(day) {
-    const checkboxes = scheduleModalBody.querySelectorAll('.activity-checkbox');
-    const total = checkboxes.length;
-    if (total === 0) return;
-
-    const checked = Array.from(checkboxes).filter(cb => cb.checked);
-    const progressPercentage = (checked.length / total) * 100;
-    scheduleProgressBar.style.width = `${progressPercentage}%`;
-
-    const checkedIndices = checked.map(cb => parseInt(cb.dataset.index));
-    saveProgress(day, checkedIndices);
-};
-
-function openScheduleModal(day) {
-    const data = scheduleData[day];
-    if (!data) return;
-
-    scheduleModal.dataset.day = day;
-    scheduleModalTitle.textContent = data.title;
-    quoteDisplay.style.opacity = 0;
-    const savedProgress = getProgress(day);
-
-    let bodyContent = '<ul class="space-y-4">';
-    data.schedule.forEach((item, index) => {
-        const isChecked = savedProgress.includes(index);
-        bodyContent += `
-        <li class="flex items-start pb-4 border-b last:border-b-0 border-gray-200">
-            <div class="w-24 text-right pr-4 flex-shrink-0">
-                <p class="font-bold text-md" style="color: ${COLORS.purple};">${item.time}</p>
-            </div>
-            <div class="flex-grow flex items-center">
-                <input type="checkbox" data-index="${index}" class="activity-checkbox h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-4" ${isChecked ? 'checked' : ''}>
-                <div>`;
-
-        if (item.workoutKey) {
-        bodyContent += `<p class="font-semibold text-lg"><a href="#" class="text-blue-600 hover:underline workout-link" data-workout-key="${item.workoutKey}">${item.activity}</a></p>`;
-        } else {
-        bodyContent += `<p class="font-semibold text-lg">${item.activity}</p>`;
-        }
-
-        bodyContent += `<p class="text-gray-600">${item.details}</p>
-                </div>
-            </div>
-        </li>`;
-    });
-    bodyContent += '</ul>';
-    scheduleModalBody.innerHTML = bodyContent;
-
-    updateProgress(day);
-    document.body.classList.add('body-no-scroll'); 
-    scheduleModal.classList.add('is-open');
-};
-
-function closeScheduleModal() {
-    clearTimeout(quoteTimeout);
-    scheduleModal.classList.remove('is-open');
-    document.body.classList.remove('body-no-scroll');
-};
-
-function openWorkoutModal(key) {
-    const data = workoutDetails[key];
-    if (!data) return;
-
-    workoutModalTitle.textContent = data.title;
-
-    // Start building the HTML content with a container for better spacing
-    let bodyContent = '<div class="space-y-6">';
-
-    // Iterate over each exercise object in the new data structure
-    data.exercises.forEach(exercise => {
-        bodyContent += `
-        <div>
-            <h3 class="text-lg font-semibold text-gray-800">${exercise.name}</h3>`;
-
-        // Check if there are sub-steps and add them as a nested list
-        if (exercise.steps && exercise.steps.length > 0) {
-            bodyContent += '<ul class="mt-2 space-y-1 list-disc list-inside text-gray-600 pl-2">';
-            exercise.steps.forEach(step => {
-                bodyContent += `<li class="text-base">${step}</li>`;
-            });
-            bodyContent += '</ul>';
-        }
-        bodyContent += `</div>`;
-    });
-
-    bodyContent += '</div>'; // Close the main container
-
-    // Add the overall workout details at the bottom with a separator
-    if (data.details) {
-        bodyContent += `<p class="mt-6 pt-4 border-t border-gray-200 text-gray-500 italic">${data.details}</p>`;
-    }
-
-    workoutModalBody.innerHTML = bodyContent;
-    document.body.classList.add('body-no-scroll');
-    workoutModal.classList.add('is-open');
-};
-
-function closeWorkoutModal() {
-    workoutModal.classList.remove('is-open');
-    if (!scheduleModal.classList.contains('is-open')) {
-        document.body.classList.remove('body-no-scroll');
-    }
-};
-
-function setupEventListeners() {
-    scheduleModalCloseBtn.addEventListener('click', closeScheduleModal);
-    scheduleModal.addEventListener('click', (e) => {
-        if (e.target === scheduleModal) closeScheduleModal();
-    });
-
-    scheduleModalBody.addEventListener('change', (e) => {
-        if (e.target.classList.contains('activity-checkbox')) {
-            const day = scheduleModal.dataset.day;
-            if (e.target.checked) showQuote();
-            updateProgress(day);
-        }
-    });
-
-    workoutModalCloseBtn.addEventListener('click', closeWorkoutModal);
-    workoutModal.addEventListener('click', (e) => {
-        if (e.target === workoutModal) closeWorkoutModal();
-    });
-
-    scheduleModalBody.addEventListener('click', (e) => {
-        if (e.target.classList.contains('workout-link')) {
-            e.preventDefault();
-            const key = e.target.getAttribute('data-workout-key');
-            openWorkoutModal(key);
-        }
+    document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
+        const next = !document.documentElement.classList.contains('dark');
+        applyDark(next);
+        localStorage.setItem('monk_dark_mode', next);
+        updateChartsTheme(next);
     });
 }
 
-export function initUI() {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const dayAbbr = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const adjustedIndex = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
-    const todayName = days[adjustedIndex];
+function applyDark(isDark) {
+    document.documentElement.classList.toggle('dark', isDark);
+    const icon = document.getElementById('dark-mode-icon');
+    if (icon) {
+        icon.className = isDark
+            ? 'fas fa-sun text-lg w-5 text-center'
+            : 'fas fa-moon text-lg w-5 text-center';
+    }
+}
 
-    // Set dynamic week range label
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - adjustedIndex);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const weekLabel = document.getElementById('week-range-label');
-    if (weekLabel) weekLabel.textContent = `The Architecture of Discipline: ${fmt(monday)} – ${fmt(sunday)}`;
+export function isDarkMode() {
+    return document.documentElement.classList.contains('dark');
+}
 
-    days.forEach((day, index) => {
-        const button = document.createElement('button');
-        button.textContent = dayAbbr[index];
-        button.setAttribute('data-day', day);
-        let buttonClasses = 'day-btn flex-1 text-center font-bold py-2 px-1 md:px-4 rounded-lg transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-400 ';
+// ── App tab switching ──────────────────────────────────────────────
+export function initAppTabs() {
+    const btns = document.querySelectorAll('.app-tab-btn');
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => switchAppTab(btn.dataset.appTab));
+    });
+    switchAppTab('planner'); // default
+}
 
-        if (day === todayName) {
-            buttonClasses += 'bg-purple-600 text-white';
-        } else {
-            buttonClasses += 'text-gray-700 hover:bg-purple-100';
-        }
-        button.className = buttonClasses;
+function switchAppTab(name) {
+    document.querySelectorAll('.app-tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.app-tab-btn').forEach(b => b.classList.remove('active'));
 
-        calendarNav.appendChild(button);
-        button.addEventListener('click', () => {
-            updateDailyBlueprint(day);
-            openScheduleModal(day);
+    const target = document.getElementById(`app-tab-${name}`);
+    if (target) target.classList.remove('hidden');
+
+    const activeBtn = document.querySelector(`[data-app-tab="${name}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── WeekPlanner: daily blueprint & modals ─────────────────────────
+let quoteTimeout;
+
+const blueprintTitle     = document.getElementById('daily-blueprint-title');
+const blueprintContainer = document.getElementById('daily-blueprint-content');
+const calendarNav        = document.getElementById('calendar-nav');
+const scheduleModal      = document.getElementById('schedule-modal');
+const scheduleModalTitle = document.getElementById('modal-title');
+const scheduleModalBody  = document.getElementById('modal-body');
+const scheduleModalClose = document.getElementById('modal-close');
+const scheduleProgressBar= document.getElementById('modal-progress-bar');
+const quoteDisplay       = document.getElementById('quote-display');
+const workoutModal       = document.getElementById('workout-modal');
+const workoutModalTitle  = document.getElementById('workout-modal-title');
+const workoutModalBody   = document.getElementById('workout-modal-body');
+const workoutModalClose  = document.getElementById('workout-modal-close');
+
+function updateDailyBlueprint(day) {
+    const data = scheduleData[day];
+    if (!data || !blueprintTitle || !blueprintContainer) return;
+    blueprintTitle.textContent = `${day}'s Blueprint`;
+
+    const matchers = [
+        item => item.activity.includes('Wake'),
+        item => item.activity.includes('Deep Work Block 1') || item.activity.includes('Running:') || item.activity.includes('Efficient Morning'),
+        item => item.activity.includes('Lunch') || item.activity.includes('Brunch'),
+        item => item.activity.includes('Deep Work Block 2') && ['Monday','Tuesday','Wednesday','Thursday','Friday'].includes(day),
+        item => item.activity.includes('Strength:') || item.activity.includes('Running:') || item.activity.includes('Dinner Party'),
+        item => item.activity.includes('Dinner') || item.activity.includes('Weekly Review') || item.activity.includes('Life Admin'),
+        item => item.activity.includes('Sleep') && ['Saturday','Sunday'].includes(day)
+    ];
+
+    const milestones = [];
+    const used = new Set();
+    matchers.forEach(matcher => {
+        let foundIdx = -1;
+        const found = data.schedule.find((item, i) => {
+            if (!used.has(i) && matcher(item)) { foundIdx = i; return true; }
+            return false;
         });
+        if (found && foundIdx !== -1) { milestones.push(found); used.add(foundIdx); }
     });
 
-    // Set initial state
+    blueprintContainer.innerHTML = milestones.map((ev, i) => `
+        <div class="blueprint-step w-full md:w-auto">
+            <span class="font-bold">${ev.time}</span><br>
+            <span>${ev.activity.split(':')[0]}</span>
+        </div>
+        ${i < milestones.length - 1 ? '<div class="text-2xl font-bold text-blue-400">→</div>' : ''}
+    `).join('');
+}
+
+function getProgress(day) {
+    try {
+        const d = localStorage.getItem(`progress_${day}`);
+        return d ? JSON.parse(d) : [];
+    } catch(e) { return []; }
+}
+function saveProgress(day, progress) {
+    localStorage.setItem(`progress_${day}`, JSON.stringify(progress));
+}
+
+function showQuote() {
+    clearTimeout(quoteTimeout);
+    if (!quoteDisplay) return;
+    quoteDisplay.textContent = getRandomQuote();
+    quoteDisplay.style.opacity = 1;
+    quoteTimeout = setTimeout(() => { quoteDisplay.style.opacity = 0; }, 60000);
+}
+
+function updateProgress(day) {
+    const checkboxes = scheduleModalBody?.querySelectorAll('.activity-checkbox') ?? [];
+    const total = checkboxes.length;
+    if (!total) return;
+    const checked = [...checkboxes].filter(cb => cb.checked);
+    if (scheduleProgressBar) scheduleProgressBar.style.width = `${(checked.length / total) * 100}%`;
+    saveProgress(day, checked.map(cb => parseInt(cb.dataset.index)));
+}
+
+function openScheduleModal(day) {
+    const data = scheduleData[day];
+    if (!data || !scheduleModal) return;
+    scheduleModal.dataset.day = day;
+    if (scheduleModalTitle) scheduleModalTitle.textContent = data.title;
+    if (quoteDisplay) quoteDisplay.style.opacity = 0;
+    const saved = getProgress(day);
+
+    let html = '<ul class="space-y-4">';
+    data.schedule.forEach((item, idx) => {
+        const checked = saved.includes(idx);
+        html += `<li class="flex items-start pb-4 border-b last:border-b-0 border-gray-200 dark:border-gray-700">
+            <div class="w-24 text-right pr-4 flex-shrink-0">
+                <p class="font-bold text-sm modal-item-time">${item.time}</p>
+            </div>
+            <div class="flex-grow flex items-center">
+                <input type="checkbox" data-index="${idx}" class="activity-checkbox h-5 w-5 rounded mr-4 accent-purple-600" ${checked ? 'checked' : ''}>
+                <div>`;
+        html += item.workoutKey
+            ? `<p class="font-semibold"><a href="#" class="text-blue-500 hover:underline workout-link" data-workout-key="${item.workoutKey}">${item.activity}</a></p>`
+            : `<p class="font-semibold">${item.activity}</p>`;
+        html += `<p class="text-gray-500 dark:text-gray-400 text-sm">${item.details}</p></div></div></li>`;
+    });
+    html += '</ul>';
+    if (scheduleModalBody) scheduleModalBody.innerHTML = html;
+    updateProgress(day);
+    document.body.classList.add('body-no-scroll');
+    scheduleModal.classList.add('is-open');
+}
+
+function closeScheduleModal() {
+    clearTimeout(quoteTimeout);
+    scheduleModal?.classList.remove('is-open');
+    document.body.classList.remove('body-no-scroll');
+}
+
+function openWorkoutModal(key) {
+    const data = workoutDetails[key];
+    if (!data || !workoutModal) return;
+    if (workoutModalTitle) workoutModalTitle.textContent = data.title;
+    let html = '<div class="space-y-5">';
+    data.exercises.forEach(ex => {
+        html += `<div><h3 class="text-base font-semibold">${ex.name}</h3>`;
+        if (ex.steps?.length) {
+            html += '<ul class="mt-2 space-y-1 list-disc list-inside text-gray-500 dark:text-gray-400 text-sm pl-2">';
+            ex.steps.forEach(s => { html += `<li>${s}</li>`; });
+            html += '</ul>';
+        }
+        html += '</div>';
+    });
+    html += '</div>';
+    if (data.details) html += `<p class="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-sm italic">${data.details}</p>`;
+    if (workoutModalBody) workoutModalBody.innerHTML = html;
+    document.body.classList.add('body-no-scroll');
+    workoutModal.classList.add('is-open');
+}
+
+function closeWorkoutModal() {
+    workoutModal?.classList.remove('is-open');
+    if (!scheduleModal?.classList.contains('is-open')) {
+        document.body.classList.remove('body-no-scroll');
+    }
+}
+
+export function initUI() {
+    const days    = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const abbr    = ['M','Tu','W','Th','F','Sa','Su'];
+    const today   = new Date();
+    const dow     = today.getDay();
+    const adjIdx  = dow === 0 ? 6 : dow - 1;
+    const todayName = days[adjIdx];
+
+    // Dynamic week range label
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - adjIdx);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const label = document.getElementById('week-range-label');
+    if (label) label.textContent = `The Architecture of Discipline: ${fmt(monday)} – ${fmt(sunday)}`;
+
+    // Build calendar nav buttons
+    if (calendarNav) {
+        days.forEach((day, i) => {
+            const btn = document.createElement('button');
+            btn.textContent = abbr[i];
+            btn.setAttribute('data-day', day);
+            btn.className = `day-btn ${day === todayName ? 'bg-purple-600 text-white' : ''}`;
+            btn.addEventListener('click', () => {
+                updateDailyBlueprint(day);
+                openScheduleModal(day);
+            });
+            calendarNav.appendChild(btn);
+        });
+    }
+
     updateDailyBlueprint(todayName);
-    setupEventListeners();
+
+    // Event listeners
+    scheduleModalClose?.addEventListener('click', closeScheduleModal);
+    scheduleModal?.addEventListener('click', e => { if (e.target === scheduleModal) closeScheduleModal(); });
+    scheduleModalBody?.addEventListener('change', e => {
+        if (e.target.classList.contains('activity-checkbox')) {
+            if (e.target.checked) showQuote();
+            updateProgress(scheduleModal.dataset.day);
+        }
+    });
+    scheduleModalBody?.addEventListener('click', e => {
+        if (e.target.classList.contains('workout-link')) {
+            e.preventDefault();
+            openWorkoutModal(e.target.getAttribute('data-workout-key'));
+        }
+    });
+    workoutModalClose?.addEventListener('click', closeWorkoutModal);
+    workoutModal?.addEventListener('click', e => { if (e.target === workoutModal) closeWorkoutModal(); });
 }
