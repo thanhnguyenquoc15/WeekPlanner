@@ -55,7 +55,9 @@ function getOverview(monthKey) {
 
   const budgetSheet = SS.getSheetByName('Budget Config');
   const txSheet     = SS.getSheetByName('Transactions');
-  if (!budgetSheet || !txSheet) return { error: 'Sheets not found' };
+  if (!budgetSheet || !txSheet) {
+    return { month: monthKey, total_allocated: 0, total_spent: 0, days_left: daysLeftInMonth(), buckets: [], days: [] };
+  }
 
   const budgetRows = budgetSheet.getDataRange().getValues().slice(1);
   const txRows     = txSheet.getDataRange().getValues().slice(1);
