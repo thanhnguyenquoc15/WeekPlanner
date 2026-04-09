@@ -423,9 +423,33 @@ function renderNetWorth(data) {
 
 // ── DCA Calculator ────────────────────────────────────────────────────
 function renderDCASection() {
-  ['dca-monthly', 'dca-rate', 'dca-years'].forEach(id => {
+  const slider = document.getElementById('dca-monthly');
+  const input  = document.getElementById('dca-monthly-input');
+
+  // Slider → text input
+  slider?.addEventListener('input', () => {
+    const vnd = parseInt(slider.value) * 1_000;
+    if (input) input.value = vnd.toLocaleString('vi-VN');
+    updateDCAChart();
+  });
+
+  // Text input → slider (on blur or Enter)
+  function syncInputToSlider() {
+    const amt = parseUserAmount(input.value.replace(/\./g, '').replace(/,/g, ''));
+    if (amt && amt > 0) {
+      const clamped = Math.min(90_000_000, Math.max(10_000_000, amt));
+      if (slider) slider.value = Math.round(clamped / 1_000);
+      input.value = clamped.toLocaleString('vi-VN');
+    }
+    updateDCAChart();
+  }
+  input?.addEventListener('blur',  syncInputToSlider);
+  input?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); syncInputToSlider(); } });
+
+  ['dca-rate', 'dca-years'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', () => updateDCAChart());
   });
+
   updateDCAChart();
 }
 
@@ -438,18 +462,16 @@ function calcDCA(monthlyVND, annualRatePct, years) {
 }
 
 function updateDCAChart() {
-  const monthly = (parseInt(document.getElementById('dca-monthly')?.value) || 2000) * 1_000;
+  const monthly = (parseInt(document.getElementById('dca-monthly')?.value) || 20000) * 1_000;
   const rate    = parseFloat(document.getElementById('dca-rate')?.value)    || 10;
   const years   = parseInt(document.getElementById('dca-years')?.value)     || 20;
 
-  document.getElementById('dca-monthly-val')?.setAttribute('data-val', fmt(monthly) + '/mo');
-  document.getElementById('dca-rate-val')?.setAttribute('data-val', rate + '%/yr');
-  document.getElementById('dca-years-val')?.setAttribute('data-val', years + ' yrs');
+  // Seed text input if empty
+  const input = document.getElementById('dca-monthly-input');
+  if (input && !input.value) input.value = monthly.toLocaleString('vi-VN');
 
-  // Update display values
-  if (document.getElementById('dca-monthly-val')) document.getElementById('dca-monthly-val').textContent = fmt(monthly) + '/mo';
-  if (document.getElementById('dca-rate-val'))    document.getElementById('dca-rate-val').textContent    = rate + '%/yr';
-  if (document.getElementById('dca-years-val'))   document.getElementById('dca-years-val').textContent   = years + ' yrs';
+  if (document.getElementById('dca-rate-val'))  document.getElementById('dca-rate-val').textContent  = rate + '%/yr';
+  if (document.getElementById('dca-years-val')) document.getElementById('dca-years-val').textContent = years + ' yrs';
 
   const { totalInvested, finalValue } = calcDCA(monthly, rate, years);
   const profit = finalValue - totalInvested;
