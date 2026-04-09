@@ -5,7 +5,7 @@
 // URL below and reload the page.
 // ============================================================
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxV_28ZsRlCvdThPhQxVpgYBeLKZx4wtPO425IQY7tfCh32CjMLHAgmWaJSGOLY7w4zGw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaTLyNay_VIp1uKUtc7q5GmOHuSrVxzJmnqdVUgTCX4Rq1a4DZCFAduoE-EKnlHSHsmw/exec';
 const DAILY_BUDGET    = 350_000;
 const DARK_KEY        = 'monk_dark_mode';
 
