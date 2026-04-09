@@ -5,7 +5,7 @@
 // URL below and reload the page.
 // ============================================================
 
-const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxV_28ZsRlCvdThPhQxVpgYBeLKZx4wtPO425IQY7tfCh32CjMLHAgmWaJSGOLY7w4zGw/exec';
 const DAILY_BUDGET    = 350_000;
 const DARK_KEY        = 'monk_dark_mode';
 
