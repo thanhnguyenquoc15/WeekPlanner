@@ -1,18 +1,21 @@
-import { getRandomQuote }    from './quotes.js';
-import { scheduleData }       from './data.js';
-import { workoutDetails }     from './exercises.js';
-import { updateChartsTheme }  from './charts.js';
+import { getRandomQuote }   from './quotes.js';
+import { workoutDetails }    from './exercises.js';
+import { updateChartsTheme } from './charts.js';
+import { STORAGE_KEYS }      from './config.js';
+
+// ── Injected schedule data (set by initUI) ─────────────────────────
+let _scheduleData = {};
 
 // ── Dark mode ──────────────────────────────────────────────────────
 export function initDarkMode() {
-    const saved = localStorage.getItem('monk_dark_mode');
+    const saved = localStorage.getItem(STORAGE_KEYS.darkMode);
     const isDark = saved === 'true';
     applyDark(isDark);
 
     document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
         const next = !document.documentElement.classList.contains('dark');
         applyDark(next);
-        localStorage.setItem('monk_dark_mode', next);
+        localStorage.setItem(STORAGE_KEYS.darkMode, next);
         updateChartsTheme(next);
     });
 }
@@ -71,7 +74,7 @@ const workoutModalBody   = document.getElementById('workout-modal-body');
 const workoutModalClose  = document.getElementById('workout-modal-close');
 
 function updateDailyBlueprint(day) {
-    const data = scheduleData[day];
+    const data = _scheduleData[day];
     if (!data || !blueprintTitle || !blueprintContainer) return;
     blueprintTitle.textContent = `${day}'s Blueprint`;
 
@@ -133,7 +136,7 @@ function updateProgress(day) {
 }
 
 function openScheduleModal(day) {
-    const data = scheduleData[day];
+    const data = _scheduleData[day];
     if (!data || !scheduleModal) return;
     scheduleModal.dataset.day = day;
     if (scheduleModalTitle) scheduleModalTitle.textContent = data.title;
@@ -196,7 +199,8 @@ function closeWorkoutModal() {
     }
 }
 
-export function initUI() {
+export function initUI(scheduleData = {}) {
+    _scheduleData = scheduleData;
     const days    = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
     const abbr    = ['M','Tu','W','Th','F','Sa','Su'];
     const today   = new Date();
@@ -230,6 +234,18 @@ export function initUI() {
 
     updateDailyBlueprint(todayName);
 
+    // Habits drawer toggle
+    const drawerToggle  = document.getElementById('habits-drawer-toggle');
+    const drawerBody    = document.getElementById('habits-drawer-body');
+    const drawerChevron = document.getElementById('habits-drawer-chevron');
+    if (drawerToggle && drawerBody && drawerChevron) {
+        drawerToggle.addEventListener('click', () => {
+            const isOpen = drawerBody.classList.contains('open');
+            drawerBody.classList.toggle('open', !isOpen);
+            drawerChevron.classList.toggle('rotated', isOpen);
+        });
+    }
+
     // Event listeners
     scheduleModalClose?.addEventListener('click', closeScheduleModal);
     scheduleModal?.addEventListener('click', e => { if (e.target === scheduleModal) closeScheduleModal(); });
@@ -247,4 +263,11 @@ export function initUI() {
     });
     workoutModalClose?.addEventListener('click', closeWorkoutModal);
     workoutModal?.addEventListener('click', e => { if (e.target === workoutModal) closeWorkoutModal(); });
+
+    // Escape key closes whichever modal is open (workout first, then schedule)
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        if (workoutModal?.classList.contains('is-open')) closeWorkoutModal();
+        else if (scheduleModal?.classList.contains('is-open')) closeScheduleModal();
+    });
 }

@@ -87,7 +87,25 @@ body {
 .modal-item-time   { color: #7542A8; }
 .dark .modal-item-time { color: #a78bfa; }
 
-/* ── Modal transitions ───────────────────────────────────────────── */
+/* ── Schedule drawer ─────────────────────────────────────────────── */
+.schedule-drawer {
+  transition: opacity 0.25s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.schedule-drawer.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.schedule-drawer .drawer-panel {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(100%);
+}
+.schedule-drawer.is-open .drawer-panel {
+  transform: translateX(0);
+}
+
+/* ── Generic modal transitions (workout, recipe) ─────────────────── */
 .modal {
   transition: opacity 0.25s ease;
   opacity: 0;
@@ -150,6 +168,262 @@ body {
 .dark .habit-row.completed {
   background: rgba(79,70,229,0.1);
   border-color: rgba(99,102,241,0.3);
+}
+
+/* ── Calendar rows (redesigned) ─────────────────────────────────── */
+.cal-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+.dark .cal-row { background: rgba(31,41,55,0.55); border-color: #374151; }
+.cal-row:hover { border-color: #a5b4fc; background: #f5f3ff; }
+.dark .cal-row:hover { background: rgba(79,70,229,0.08); border-color: rgba(99,102,241,0.45); }
+.cal-row.cal-today {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1.5px #6366f1;
+  background: #eef2ff;
+}
+.dark .cal-row.cal-today {
+  background: rgba(79,70,229,0.13);
+  border-color: #818cf8;
+  box-shadow: 0 0 0 1.5px #818cf8;
+}
+.cal-row.cal-done { opacity: 0.6; }
+
+.cal-day-pill {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+.cal-day-pill[data-day="T2"] { background:#dbeafe; color:#1d4ed8; }
+.cal-day-pill[data-day="T3"] { background:#d1fae5; color:#065f46; }
+.cal-day-pill[data-day="T4"] { background:#ede9fe; color:#5b21b6; }
+.cal-day-pill[data-day="T5"] { background:#ffedd5; color:#9a3412; }
+.cal-day-pill[data-day="T6"] { background:#fee2e2; color:#991b1b; }
+.cal-day-pill[data-day="T7"] { background:#fef9c3; color:#854d0e; }
+.cal-day-pill[data-day="CN"] { background:#f3f4f6; color:#374151; }
+.dark .cal-day-pill[data-day="T2"] { background:rgba(37,99,235,.22);  color:#93c5fd; }
+.dark .cal-day-pill[data-day="T3"] { background:rgba(5,150,105,.22);  color:#6ee7b7; }
+.dark .cal-day-pill[data-day="T4"] { background:rgba(109,40,217,.22); color:#c4b5fd; }
+.dark .cal-day-pill[data-day="T5"] { background:rgba(234,88,12,.22);  color:#fdba74; }
+.dark .cal-day-pill[data-day="T6"] { background:rgba(220,38,38,.22);  color:#fca5a5; }
+.dark .cal-day-pill[data-day="T7"] { background:rgba(202,138,4,.22);  color:#fde047; }
+.dark .cal-day-pill[data-day="CN"] { background:rgba(75,85,99,.3);    color:#9ca3af; }
+
+.cal-habit-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #f3f4f6;
+  transition: background 0.15s;
+}
+.dark .cal-habit-icon { background: rgba(55,65,81,.6); }
+.cal-habit-icon.cal-habit-done { background: #dcfce7; }
+.dark .cal-habit-icon.cal-habit-done { background: rgba(34,197,94,.15); }
+
+.cal-task {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #1f2937;
+  line-height: 1.3;
+}
+.dark .cal-task { color: #e5e7eb; }
+.cal-task-done { text-decoration: line-through; color: #9ca3af !important; }
+
+.cal-today-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6366f1;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 0.3rem;
+  padding: 0.05rem 0.35rem;
+  margin-bottom: 0.2rem;
+}
+.dark .cal-today-badge { background: rgba(79,70,229,0.2); border-color: #6366f1; color: #a5b4fc; }
+
+.cal-check {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all 0.15s;
+}
+.dark .cal-check { border-color: #4b5563; }
+.cal-check.cal-check-done {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+/* ── Random Menu ─────────────────────────────────────────────────── */
+.menu-meal-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.625rem;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+}
+.dark .menu-meal-row { background: rgba(55,65,81,0.35); border-color: rgba(75,85,99,0.3); }
+
+.menu-time {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #9ca3af;
+  width: 4.5rem;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.macro-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.35rem;
+  white-space: nowrap;
+}
+.macro-p      { background: rgba(239,68,68,.1);   color: #dc2626; }
+.macro-c      { background: rgba(234,179,8,.12);  color: #b45309; }
+.macro-f      { background: rgba(59,130,246,.1);  color: #1d4ed8; }
+.macro-p-met  { background: rgba(34,197,94,.15);  color: #15803d; }
+.macro-p-miss { background: rgba(239,68,68,.15);  color: #dc2626; }
+.dark .macro-p      { color: #fca5a5; }
+.dark .macro-c      { color: #fde68a; }
+.dark .macro-f      { color: #93c5fd; }
+.dark .macro-p-met  { color: #86efac; }
+.dark .macro-p-miss { color: #fca5a5; }
+
+.menu-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.875rem;
+  border-radius: 0.625rem;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  margin-top: 0.125rem;
+}
+.dark .menu-total-row { background: rgba(31,41,55,0.6); border-color: rgba(75,85,99,0.4); }
+
+.macro-summary-bars {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.625rem;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.dark .macro-summary-bars { background: rgba(55,65,81,0.2); border-color: rgba(75,85,99,0.2); }
+
+.macro-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.macro-bar-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #9ca3af;
+  width: 3.5rem;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.macro-bar-val {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  width: 2.5rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+.macro-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.dark .macro-bar-track { background: #374151; }
+.macro-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+.bar-protein { background: #ef4444; }
+.bar-carb    { background: #f59e0b; }
+.bar-fat     { background: #3b82f6; }
+.bar-kcal    { background: linear-gradient(90deg, #7542A8, #a78bfa); }
+
+/* Per-meal calorie badge */
+.menu-kcal {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #7542A8;
+  white-space: nowrap;
+}
+.dark .menu-kcal { color: #a78bfa; }
+
+/* Daily total calorie display */
+.menu-kcal-total {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #7542A8;
+  white-space: nowrap;
+}
+.dark .menu-kcal-total { color: #a78bfa; }
+
+/* ── Habits drawer ───────────────────────────────────────────────── */
+.habits-drawer-body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+.habits-drawer-body.open {
+  max-height: 1200px;
+  opacity: 1;
+}
+#habits-drawer-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+/* ── Recipe modal ingredient checkboxes ─────────────────────────── */
+/* Target only the ingredient name span (first sibling after checkbox) */
+.recipe-check:checked + span {
+  text-decoration: line-through;
+  color: #9ca3af;
 }
 
 /* ── Training plan week cards ────────────────────────────────────── */

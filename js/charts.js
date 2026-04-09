@@ -1,3 +1,36 @@
+// ── Effort calculation ────────────────────────────────────────────
+// Parses "7:00 AM" / "12:30 PM" → total minutes since midnight
+function parseMinutes(timeStr) {
+    const [timePart, period] = timeStr.trim().split(' ');
+    let [h, m] = timePart.split(':').map(Number);
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return h * 60 + (m || 0);
+}
+
+const EFFORT_PATTERNS = [
+    { key: 'deepWork', label: 'Deep Work',  re: /Deep Work/i },
+    { key: 'learning', label: 'Learning',   re: /Learning\s+Block/i },
+    { key: 'training', label: 'Training',   re: /^(Strength:|Running:)/i },
+];
+
+// Returns { deepWork, learning, training } in hours, summed across all 7 days
+function calcEffortHours(scheduleData) {
+    const totals = { deepWork: 0, learning: 0, training: 0 };
+    for (const dayData of Object.values(scheduleData)) {
+        const entries = dayData.schedule ?? [];
+        for (let i = 0; i < entries.length; i++) {
+            const cat = EFFORT_PATTERNS.find(p => p.re.test(entries[i].activity));
+            if (!cat) continue;
+            const start = parseMinutes(entries[i].time);
+            // Duration = gap to next entry; cap unknown last-entry at 60 min
+            const end = i < entries.length - 1 ? parseMinutes(entries[i + 1].time) : start + 60;
+            totals[cat.key] += Math.max(0, end - start) / 60;
+        }
+    }
+    return totals;
+}
+
 const COLORS = {
     blue:   '#00A6ED',
     purple: '#7542A8',
@@ -29,15 +62,39 @@ function tooltipDefaults() {
     };
 }
 
-function createEffortDonutChart(isDark) {
+function createEffortDonutChart(isDark, scheduleData) {
     const ctx = document.getElementById('effortDonutChart');
     if (!ctx) return;
+
+    const { deepWork, learning, training } = calcEffortHours(scheduleData);
+    const total = deepWork + learning + training;
+    const pct   = v => total > 0 ? ` (${Math.round(v / total * 100)}%)` : '';
+
+    // Update the card subtitle with the real total
+    const card = ctx.closest('.planner-card');
+    if (card) {
+        const sub = card.querySelector('p.text-center');
+        if (sub) sub.textContent = `How your ${total.toFixed(1)} active hours are allocated.`;
+    }
+
+    // Also update the hardcoded stat cards in the Planner tab
+    const statDeepWork = document.querySelector('[data-stat="deep-work"]');
+    const statLearning = document.querySelector('[data-stat="learning"]');
+    const statTraining = document.querySelector('[data-stat="training"]');
+    if (statDeepWork) statDeepWork.textContent = deepWork.toFixed(1);
+    if (statLearning) statLearning.textContent = learning.toFixed(1);
+    if (statTraining) statTraining.textContent = training.toFixed(1);
+
     chartInstances.donut = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['Deep Work (74.8%)', 'Learning (14.0%)', 'Training (11.2%)'],
+            labels: [
+                `Deep Work${pct(deepWork)}`,
+                `Learning${pct(learning)}`,
+                `Training${pct(training)}`,
+            ],
             datasets: [{
-                data: [40, 7.5, 6],
+                data: [deepWork, learning, training],
                 backgroundColor: [COLORS.blue, COLORS.pink, COLORS.orange],
                 borderColor: isDark ? '#1f2937' : '#ffffff',
                 borderWidth: 4,
@@ -49,16 +106,58 @@ function createEffortDonutChart(isDark) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { position: 'bottom', labels: { color: fontColor(isDark), font: { size: 12 } } },
-                tooltip: tooltipDefaults()
+                tooltip: {
+                    ...tooltipDefaults(),
+                    callbacks: {
+                        ...tooltipDefaults().callbacks,
+                        label(item) {
+                            const hrs = item.raw.toFixed(1);
+                            return ` ${hrs} h`;
+                        }
+                    }
+                }
             },
             cutout: '62%'
         }
     });
 }
 
-function createIntensityRadarChart(isDark) {
+// Maps workout activity name keywords → intensity score (0–10)
+const RUN_INTENSITY_MAP = [
+    { re: /speed|interval/i, score: 9  },
+    { re: /tempo/i,          score: 7  },
+    { re: /long\s*run/i,     score: 6  },
+    { re: /easy\s*run/i,     score: 4  },
+];
+const STRENGTH_INTENSITY_MAP = [
+    { re: /pull\s*day/i,  score: 9 },
+    { re: /push\s*day/i,  score: 8 },
+];
+
+function calcTrainingIntensity(scheduleData) {
+    return WORKOUT_DAYS.map(day => {
+        const entry = (scheduleData[day]?.schedule ?? [])
+            .find(e => /^(Strength:|Running:)/i.test(e.activity));
+        if (!entry) return { run: 4, strength: 4 };
+
+        if (/^Running:/i.test(entry.activity)) {
+            const match = RUN_INTENSITY_MAP.find(r => r.re.test(entry.activity));
+            return { run: match?.score ?? 5, strength: 4 };
+        } else {
+            const match = STRENGTH_INTENSITY_MAP.find(r => r.re.test(entry.activity));
+            return { run: 4, strength: match?.score ?? 8 };
+        }
+    });
+}
+
+function createIntensityRadarChart(isDark, scheduleData) {
     const ctx = document.getElementById('intensityRadarChart');
     if (!ctx) return;
+
+    const intensity = calcTrainingIntensity(scheduleData);
+    const runData      = intensity.map(d => d.run);
+    const strengthData = intensity.map(d => d.strength);
+
     chartInstances.radar = new Chart(ctx, {
         type: 'radar',
         data: {
@@ -66,7 +165,7 @@ function createIntensityRadarChart(isDark) {
             datasets: [
                 {
                     label: 'Running Intensity',
-                    data: [2, 8, 2, 7, 2, 10, 5],
+                    data: runData,
                     fill: true,
                     backgroundColor: 'rgba(247,59,116,0.18)',
                     borderColor: COLORS.pink,
@@ -77,7 +176,7 @@ function createIntensityRadarChart(isDark) {
                 },
                 {
                     label: 'Strength Focus',
-                    data: [9, 2, 6, 2, 9, 2, 2],
+                    data: strengthData,
                     fill: true,
                     backgroundColor: 'rgba(0,166,237,0.18)',
                     borderColor: COLORS.blue,
@@ -93,7 +192,14 @@ function createIntensityRadarChart(isDark) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { position: 'bottom', labels: { color: fontColor(isDark), font: { size: 12 } } },
-                tooltip: tooltipDefaults()
+                tooltip: {
+                    ...tooltipDefaults(),
+                    callbacks: {
+                        label(item) {
+                            return ` ${item.dataset.label}: ${item.raw}/10`;
+                        }
+                    }
+                }
             },
             scales: {
                 r: {
@@ -108,53 +214,70 @@ function createIntensityRadarChart(isDark) {
     });
 }
 
-function createWorkoutBarChart(isDark) {
-    const ctx = document.getElementById('workoutBarChart');
-    if (!ctx) return;
-    chartInstances.bar = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
-            datasets: [
-                { label: 'Strength', data: [1,0,1,0,1,0,0], backgroundColor: COLORS.blue,  borderColor:'#fff', borderWidth:2, stack:'s0' },
-                { label: 'Running',  data: [0,1,0,1,0,1,1], backgroundColor: COLORS.pink,  borderColor:'#fff', borderWidth:2, stack:'s0' },
-                { label: 'Rest',     data: [1,1,1,1,1,1,1], backgroundColor: isDark ? '#374151' : '#E5E7EB', borderColor:'#fff', borderWidth:2, stack:'s0' }
-            ]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top', labels: { color: fontColor(isDark), font: { size: 12 } } },
-                tooltip: {
-                    ...tooltipDefaults(),
-                    callbacks: {
-                        title: (items) => items[0].label,
-                        label(ctx) {
-                            if (ctx.dataset.label === 'Rest') return 'Full Rest';
-                            const day = ctx.label;
-                            const map = {
-                                Strength: { Monday:'Pull Day', Wednesday:'Push Day', Friday:'Pull Day' },
-                                Running:  { Tuesday:'Speed Work', Thursday:'Tempo Run', Saturday:'Long Run', Sunday:'Easy Run' }
-                            };
-                            return `${ctx.dataset.label}: ${map[ctx.dataset.label]?.[day] ?? ''}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { display: false, stacked: true },
-                y: { stacked: true, ticks: { color: fontColor(isDark), font: { size: 13 } }, grid: { display: false } }
-            }
-        }
-    });
+const WORKOUT_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const WORKOUT_ABBR = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+
+const WORKOUT_STYLE = {
+    strength: {
+        card:  'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700/40',
+        badge: 'bg-blue-100 dark:bg-blue-800/40 text-blue-700 dark:text-blue-300',
+        icon:  '💪',
+        label: 'Strength',
+    },
+    running: {
+        card:  'bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-700/40',
+        badge: 'bg-pink-100 dark:bg-pink-800/40 text-pink-700 dark:text-pink-300',
+        icon:  '🏃',
+        label: 'Running',
+    },
+    rest: {
+        card:  'bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700',
+        badge: 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500',
+        icon:  '😴',
+        label: 'Rest',
+    },
+};
+
+function getWorkoutForDay(dayData) {
+    const entry = (dayData?.schedule ?? []).find(e => /^(Strength:|Running:)/i.test(e.activity));
+    if (!entry) return { type: 'rest', name: 'Rest', time: null };
+    const type = /^Strength:/i.test(entry.activity) ? 'strength' : 'running';
+    const name = entry.activity.split(':')[1]?.trim() ?? '';
+    return { type, name, time: entry.time };
 }
 
-export function initializeCharts(isDark = false) {
-    createEffortDonutChart(isDark);
-    createIntensityRadarChart(isDark);
-    createWorkoutBarChart(isDark);
+function renderWorkoutSchedule(scheduleData) {
+    const grid = document.getElementById('workout-schedule-grid');
+    if (!grid) return;
+
+    const today    = new Date();
+    const dow      = today.getDay();                        // 0 = Sun
+    const todayIdx = dow === 0 ? 6 : dow - 1;              // 0 = Mon
+
+    grid.innerHTML = WORKOUT_DAYS.map((day, i) => {
+        const { type, name, time } = getWorkoutForDay(scheduleData[day]);
+        const s        = WORKOUT_STYLE[type];
+        const isToday  = i === todayIdx;
+        const todayRing = isToday
+            ? 'ring-2 ring-purple-500 dark:ring-purple-400'
+            : '';
+
+        return `
+        <div class="relative flex flex-col items-center gap-2 p-3 rounded-xl border ${s.card} ${todayRing} transition-all">
+            ${isToday ? `<span class="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[0.55rem] font-bold uppercase tracking-widest bg-purple-600 text-white px-1.5 py-0.5 rounded-full whitespace-nowrap">Today</span>` : ''}
+            <p class="text-[0.6rem] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mt-1">${WORKOUT_ABBR[i]}</p>
+            <span class="text-2xl">${s.icon}</span>
+            <span class="text-[0.6rem] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${s.badge}">${s.label}</span>
+            <p class="text-[0.65rem] font-semibold text-gray-600 dark:text-gray-300 text-center leading-tight min-h-[2rem] flex items-center justify-center">${name || '—'}</p>
+            ${time ? `<p class="text-[0.6rem] text-gray-400 dark:text-gray-500">${time}</p>` : ''}
+        </div>`;
+    }).join('');
+}
+
+export function initializeCharts(isDark = false, scheduleData = {}) {
+    createEffortDonutChart(isDark, scheduleData);
+    createIntensityRadarChart(isDark, scheduleData);
+    renderWorkoutSchedule(scheduleData);
 }
 
 export function updateChartsTheme(isDark) {
@@ -175,12 +298,5 @@ export function updateChartsTheme(isDark) {
         donut.options.plugins.legend.labels.color = fontColor(isDark);
         donut.update();
     }
-    // Update bar
-    const bar = chartInstances.bar;
-    if (bar) {
-        bar.data.datasets[2].backgroundColor = isDark ? '#374151' : '#E5E7EB';
-        bar.options.plugins.legend.labels.color = fontColor(isDark);
-        bar.options.scales.y.ticks.color = fontColor(isDark);
-        bar.update();
-    }
+    // Workout schedule grid is pure HTML — dark mode handled by Tailwind dark: classes, no update needed
 }

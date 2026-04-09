@@ -34,7 +34,7 @@
       <button class="app-tab-btn" data-app-tab="planner"><i class="fas fa-calendar-week mr-1.5"></i>Planner</button>
       <button class="app-tab-btn" data-app-tab="today"><i class="fas fa-bullseye mr-1.5"></i>Today</button>
       <button class="app-tab-btn" data-app-tab="running"><i class="fas fa-running mr-1.5"></i>Running</button>
-      <button class="app-tab-btn" data-app-tab="habits"><i class="fas fa-check-circle mr-1.5"></i>Habits</button>
+      <button class="app-tab-btn" data-app-tab="financial"><i class="fas fa-wallet mr-1.5"></i>Financial</button>
     </nav>
 
     <!-- ════════════════════════════════════════════════════════════ -->
@@ -49,19 +49,48 @@
         </div>
       </section>
 
+      <!-- ── Daily Habits Drawer ──────────────────────────────────── -->
+      <section class="mb-10">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
+          <button id="habits-drawer-toggle"
+            class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-check-double text-indigo-600 dark:text-indigo-400 text-sm"></i>
+              </div>
+              <div class="text-left">
+                <p class="font-bold text-gray-800 dark:text-gray-200 text-sm">Weekly Progress & Core Habits</p>
+                <p class="text-xs text-gray-400 mt-0.5">Track your schedule and daily habits</p>
+              </div>
+            </div>
+            <i id="habits-drawer-chevron" class="fas fa-chevron-up text-gray-400 transition-transform duration-300"></i>
+          </button>
+          <div id="habits-drawer-body" class="habits-drawer-body open">
+            <div class="px-5 pb-5 border-t border-gray-100 dark:border-gray-700">
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 pt-5">Weekly Schedule</h3>
+              <div class="space-y-2" id="weekly-calendar-list"></div>
+              <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Core Habits (Daily)</h4>
+                <div class="space-y-2" id="habits-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="mb-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
           <div class="planner-card">
-            <div class="text-5xl font-bold text-blue-500">40</div>
+            <div data-stat="deep-work" class="text-5xl font-bold text-blue-500">—</div>
             <p class="text-gray-500 dark:text-gray-400 mt-2">Hours of Deep Work</p>
           </div>
           <div class="planner-card">
-            <div class="text-5xl font-bold text-pink-500">7.5</div>
+            <div data-stat="learning" class="text-5xl font-bold text-pink-500">—</div>
             <p class="text-gray-500 dark:text-gray-400 mt-2">Hours of Focused Learning</p>
           </div>
           <div class="planner-card">
-            <div class="text-5xl font-bold text-orange-400">6</div>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Targeted Training Sessions</p>
+            <div data-stat="training" class="text-5xl font-bold text-orange-400">—</div>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Hours of Training</p>
           </div>
         </div>
       </section>
@@ -87,40 +116,63 @@
           <p class="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">Balance between strength and running each day.</p>
           <div class="chart-container flex-grow"><canvas id="intensityRadarChart"></canvas></div>
         </div>
-        <div class="planner-card lg:col-span-2 flex flex-col">
+        <div class="planner-card lg:col-span-2">
           <h2 class="text-xl font-bold text-center mb-1 text-purple-brand">Weekly Workout Schedule</h2>
-          <p class="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">Type and focus of each workout this week.</p>
-          <div class="w-full max-w-4xl mx-auto h-80 relative"><canvas id="workoutBarChart"></canvas></div>
+          <p class="text-center text-gray-500 dark:text-gray-400 mb-4 text-sm">This week's training split at a glance.</p>
+          <div id="workout-schedule-grid" class="grid grid-cols-7 gap-2"></div>
         </div>
         <div class="planner-card lg:col-span-2">
           <h2 class="text-xl font-bold text-center mb-6 text-purple-brand">Nutrition & Recovery Protocol</h2>
-          <ul class="space-y-4 max-w-2xl mx-auto">
-            <li class="flex items-start">
-              <span class="text-2xl mr-4">⏱️</span>
-              <div>
-                <h3 class="font-bold">Intermittent Fasting</h3>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">12:00 PM – 8:00 PM eating window. Mornings are for coffee and water only.</p>
+          <div class="max-w-2xl mx-auto">
+            <ul class="space-y-4">
+              <li class="flex items-start">
+                <span class="text-2xl mr-4">⏱️</span>
+                <div>
+                  <h3 class="font-bold">Intermittent Fasting</h3>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm">12:00 PM – 8:00 PM eating window. Mornings are for coffee and water only.</p>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-2xl mr-4">💧</span>
+                <div>
+                  <h3 class="font-bold">Strategic Hydration</h3>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm">Minimum 3–4 liters daily. Critical with creatine supplementation.</p>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="text-2xl mr-4">💪</span>
+                <div>
+                  <h3 class="font-bold">Targeted Supplementation</h3>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm">
+                    <span class="font-semibold">Creatine (5g):</span> Daily.
+                    <span class="font-semibold">Whey:</span> Post-workout.
+                    <span class="font-semibold">Casein:</span> Pre-sleep.
+                  </p>
+                </div>
+              </li>
+            </ul>
+
+            <!-- ── Random Menu Generator ──────────────────────────── -->
+            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h3 class="font-bold text-sm text-gray-700 dark:text-gray-300">Today's Meal Plan</h3>
+                  <p class="text-xs text-gray-400 mt-0.5">IF window 12 PM–8 PM · Last meal by 7:30 PM · Target: 130g protein</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="generate-menu-btn"
+                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-400 hover:to-pink-400 text-white text-xs font-bold rounded-xl shadow transition-all active:scale-95">
+                    <i class="fas fa-dice"></i> Generate Menu
+                  </button>
+                  <button id="shopping-list-btn"
+                    class="hidden flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-400 hover:to-teal-400 text-white text-xs font-bold rounded-xl shadow transition-all active:scale-95">
+                    <i class="fas fa-shopping-cart"></i> Shopping List
+                  </button>
+                </div>
               </div>
-            </li>
-            <li class="flex items-start">
-              <span class="text-2xl mr-4">💧</span>
-              <div>
-                <h3 class="font-bold">Strategic Hydration</h3>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">Minimum 3–4 liters daily. Critical with creatine supplementation.</p>
-              </div>
-            </li>
-            <li class="flex items-start">
-              <span class="text-2xl mr-4">💪</span>
-              <div>
-                <h3 class="font-bold">Targeted Supplementation</h3>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">
-                  <span class="font-semibold">Creatine (5g):</span> Daily.
-                  <span class="font-semibold">Whey:</span> Post-workout.
-                  <span class="font-semibold">Casein:</span> Pre-sleep.
-                </p>
-              </div>
-            </li>
-          </ul>
+              <div id="menu-output" class="hidden space-y-1.5"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -246,6 +298,24 @@
         </form>
       </div>
 
+      <!-- Run history header + export / import -->
+      <div class="flex items-center justify-between px-1">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Run History</p>
+        <div class="flex gap-2">
+          <button id="export-runs-btn"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+            title="Download runs.json">
+            <i class="fas fa-download"></i> Export
+          </button>
+          <label
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
+            title="Import runs.json">
+            <i class="fas fa-upload"></i> Import
+            <input type="file" id="import-runs-input" accept=".json" class="sr-only">
+          </label>
+        </div>
+      </div>
+
       <div id="activities-list" class="space-y-3"></div>
 
       <!-- 6-Week Training Plan (collapsible) -->
@@ -265,25 +335,24 @@
     </div>
 
     <!-- ════════════════════════════════════════════════════════════ -->
-    <!-- TAB: HABITS                                                  -->
+    <!-- TAB: FINANCIAL                                               -->
     <!-- ════════════════════════════════════════════════════════════ -->
-    <div id="app-tab-habits" class="app-tab-content hidden space-y-5">
-      <div class="planner-card">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Weekly Schedule</h3>
-        <div class="space-y-2" id="weekly-calendar-list"></div>
-        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Core Habits (Daily)</h4>
-          <div class="space-y-2" id="habits-list"></div>
+    <div id="app-tab-financial" class="app-tab-content hidden space-y-5">
+      <div class="planner-card flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-5">
+          <i class="fas fa-wallet text-3xl text-green-600 dark:text-green-400"></i>
         </div>
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Financial Dashboard</h2>
+        <p class="text-sm text-gray-400 max-w-xs">Coming soon — expense tracking, savings goals, and financial discipline metrics.</p>
       </div>
     </div>
 
   </div><!-- /container -->
 
-  <!-- ── Schedule Modal ──────────────────────────────────────────── -->
-  <div id="schedule-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
-    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-      <div class="sticky top-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700 z-10">
+  <!-- ── Schedule Drawer ──────────────────────────────────────────── -->
+  <div id="schedule-modal" class="schedule-drawer fixed inset-0 bg-black bg-opacity-60 z-50">
+    <div class="drawer-panel absolute top-0 right-0 h-full w-[70%] max-w-2xl bg-white dark:bg-gray-800 shadow-2xl flex flex-col">
+      <div class="flex-shrink-0 bg-white dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex justify-between items-center mb-3">
           <h2 id="modal-title" class="text-xl font-bold text-purple-brand"></h2>
           <button id="modal-close" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-3xl leading-none">&times;</button>
@@ -293,7 +362,7 @@
         </div>
         <div id="quote-display" class="text-center text-gray-500 dark:text-gray-400 italic text-sm opacity-0 transition-opacity duration-500"></div>
       </div>
-      <div id="modal-body" class="p-6"></div>
+      <div id="modal-body" class="p-6 overflow-y-auto flex-1"></div>
     </div>
   </div>
 
@@ -308,6 +377,33 @@
     </div>
   </div>
 
+  <!-- ── Recipe Modal ──────────────────────────────────────────── -->
+  <div id="recipe-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+      <div class="sticky top-0 bg-white dark:bg-gray-800 px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0 rounded-t-xl">
+        <h2 id="recipe-modal-title" class="text-base font-bold text-purple-brand pr-4 leading-tight"></h2>
+        <button id="recipe-modal-close" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-3xl leading-none flex-shrink-0">&times;</button>
+      </div>
+      <div id="recipe-modal-body" class="p-5 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- ── Shopping List Modal ────────────────────────────────────── -->
+  <div id="shopping-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center p-4">
+    <div class="modal-content bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+      <div class="sticky top-0 bg-white dark:bg-gray-800 px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0 rounded-t-xl">
+        <div>
+          <h2 class="text-base font-bold text-green-600 dark:text-green-400">🛒 Shopping List</h2>
+          <p id="shopping-modal-subtitle" class="text-xs text-gray-400 mt-0.5"></p>
+        </div>
+        <button id="shopping-modal-close" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-3xl leading-none flex-shrink-0">&times;</button>
+      </div>
+      <div id="shopping-modal-body" class="p-5 overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- js-yaml must load before the module so jsyaml global is available -->
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
