@@ -2,6 +2,7 @@ import { initializeCharts }               from './charts.js';
 import { initUI, initDarkMode, initAppTabs, isDarkMode } from './ui.js';
 import { initHabits }                     from './habits.js';
 import { initNutrition }                  from './nutrition.js';
+import { initFinance }                    from './finance.js';
 import { loadWeekData, seedRunsIfEmpty }  from './data.js';
 import { Storage }                        from './storage.js';
 import { STORAGE_KEYS }                   from './config.js';
@@ -22,4 +23,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeCharts(isDarkMode(), weekData.scheduleData);
     initHabits(weekData);
     initNutrition();
+    initFinance();
 });
