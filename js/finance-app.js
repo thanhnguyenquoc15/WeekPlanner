@@ -48,14 +48,33 @@ function todayKey() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-// ── API ───────────────────────────────────────────────────────────────
-async function api(action, params = {}) {
-  const url = new URL(APPS_SCRIPT_URL);
-  url.searchParams.set('action', action);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+// ── API (JSONP — bypasses Apps Script CORS redirect) ─────────────────
+function api(action, params = {}) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_gascb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timer  = setTimeout(() => {
+      cleanup();
+      reject(new Error('Request timed out'));
+    }, 15_000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      script.remove();
+    }
+
+    window[cbName] = (data) => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('JSONP request failed')); };
+
+    const url = new URL(APPS_SCRIPT_URL);
+    url.searchParams.set('action', action);
+    url.searchParams.set('callback', cbName);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
+
+    script.src = url.toString();
+    document.head.appendChild(script);
+  });
 }
 
 // ── Dark mode ─────────────────────────────────────────────────────────

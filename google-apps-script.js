@@ -15,23 +15,34 @@
 const SS = SpreadsheetApp.getActiveSpreadsheet();
 
 function doGet(e) {
-  const action = ((e.parameter && e.parameter.action) || 'overview').toLowerCase();
+  const p      = e.parameter || {};
+  const action = (p.action || 'overview').toLowerCase();
+  const cb     = p.callback; // JSONP callback name
   let result;
 
   try {
     switch (action) {
-      case 'overview':  result = getOverview(e.parameter && e.parameter.month);  break;
-      case 'trend':     result = getMonthlyTrend();                               break;
-      case 'networth':  result = getNetWorth();                                   break;
-      case 'logspend':  result = logSpend(e.parameter);                           break;
+      case 'overview':  result = getOverview(p.month);  break;
+      case 'trend':     result = getMonthlyTrend();      break;
+      case 'networth':  result = getNetWorth();          break;
+      case 'logspend':  result = logSpend(p);            break;
       default:          result = { error: 'Unknown action: ' + action };
     }
   } catch (err) {
     result = { error: err.message };
   }
 
+  const json = JSON.stringify(result);
+
+  // JSONP — wraps response so browser <script> tag can read it cross-origin
+  if (cb) {
+    return ContentService
+      .createTextOutput(cb + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify(result))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }
 
