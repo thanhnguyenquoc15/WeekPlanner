@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance — Monk Mode</title>
+  <script>tailwind.config = { darkMode: 'class' }</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card { @apply bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5; }
+    input[type=range] { accent-color: #7542A8; }
+    .dark input[type=range] { accent-color: #a78bfa; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 min-h-screen">
+
+  <div class="max-w-5xl mx-auto px-4 py-6 pb-12">
+
+    <!-- ── Header ──────────────────────────────────────────────────── -->
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <a href="index.html"
+           class="flex items-center gap-1.5 text-sm text-gray-400 hover:text-purple-500 transition-colors">
+          <i class="fas fa-arrow-left"></i> Planner
+        </a>
+        <div>
+          <h1 class="text-3xl font-black text-purple-brand leading-none">FINANCE</h1>
+          <p class="text-xs text-gray-400 mt-0.5">Google Sheets · Live Data</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 flex-wrap justify-end">
+        <!-- Status -->
+        <div class="flex items-center text-xs text-gray-400">
+          <span id="status-dot" class="inline-block w-2 h-2 rounded-full mr-1.5 bg-gray-400 animate-pulse"></span>
+          <span id="status-text">Loading</span>
+        </div>
+
+        <!-- Month navigator -->
+        <div class="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-2 py-1">
+          <button id="prev-month"
+            class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors">
+            <i class="fas fa-chevron-left text-xs"></i>
+          </button>
+          <span id="month-display" class="text-sm font-bold w-20 text-center">Apr 2026</span>
+          <button id="next-month"
+            class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors">
+            <i class="fas fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Dark mode -->
+        <button id="dark-mode-toggle"
+          class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          <i id="dark-mode-icon" class="fas fa-moon text-sm w-4 text-center"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Setup Banner ─────────────────────────────────────────────── -->
+    <div id="setup-banner"
+      class="hidden mb-5 rounded-2xl border border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 p-4">
+      <p class="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+        <i class="fas fa-plug mr-2"></i>Connect to Google Sheets
+      </p>
+      <p class="text-xs text-amber-700 dark:text-amber-400">
+        Deploy <code class="bg-amber-100 dark:bg-amber-900 px-1 rounded">google-apps-script.js</code> as a web app,
+        then paste the URL into <code class="bg-amber-100 dark:bg-amber-900 px-1 rounded">js/finance-app.js → APPS_SCRIPT_URL</code>.
+      </p>
+    </div>
+
+    <!-- ── Quick Log ────────────────────────────────────────────────── -->
+    <div class="card mb-5">
+      <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+        <i class="fas fa-plus-circle mr-1.5 text-purple-brand"></i>Log Today's Spend
+      </h3>
+      <form id="quick-log-form" class="flex gap-2 flex-wrap items-center">
+        <input id="log-amount" type="text" placeholder="150k · 1.5tr · 250000"
+          class="flex-1 min-w-[140px] px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+        <select id="log-bucket"
+          class="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+          <option value="daily_spending">Daily Spending</option>
+        </select>
+        <button type="submit"
+          class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">
+          Log It
+        </button>
+      </form>
+    </div>
+
+    <!-- ── Summary Cards ─────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+
+      <div id="card-today" class="card">
+        <p class="card-title text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Today</p>
+        <p class="card-spent text-2xl font-black text-gray-800 dark:text-gray-100">—</p>
+        <p class="card-total text-xs text-gray-400 mt-0.5">/ —</p>
+        <div class="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-2 overflow-hidden">
+          <div class="card-bar h-full rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="card-pct text-xs text-gray-400">0%</span>
+          <span class="card-sub text-xs text-gray-400">—</span>
+        </div>
+      </div>
+
+      <div id="card-week" class="card">
+        <p class="card-title text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">This Week</p>
+        <p class="card-spent text-2xl font-black text-gray-800 dark:text-gray-100">—</p>
+        <p class="card-total text-xs text-gray-400 mt-0.5">/ —</p>
+        <div class="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-2 overflow-hidden">
+          <div class="card-bar h-full rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="card-pct text-xs text-gray-400">0%</span>
+          <span class="card-sub text-xs text-gray-400">—</span>
+        </div>
+      </div>
+
+      <div id="card-month" class="card">
+        <p class="card-title text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">This Month</p>
+        <p class="card-spent text-2xl font-black text-gray-800 dark:text-gray-100">—</p>
+        <p class="card-total text-xs text-gray-400 mt-0.5">/ —</p>
+        <div class="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-2 overflow-hidden">
+          <div class="card-bar h-full rounded-full transition-all duration-500" style="width:0%"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="card-pct text-xs text-gray-400">0%</span>
+          <span class="card-sub text-xs text-gray-400">—</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Weekly Spend Chart ─────────────────────────────────────────── -->
+    <div class="card mb-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-base font-bold">Weekly Spending</h3>
+          <p class="text-xs text-gray-400 mt-0.5">Last 7 days · dashed line = daily limit</p>
+        </div>
+      </div>
+      <div style="height:220px">
+        <canvas id="weekly-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- ── Budget + Trend ─────────────────────────────────────────────── -->
+    <div class="grid md:grid-cols-2 gap-5 mb-5">
+
+      <div class="card">
+        <h3 class="text-base font-bold mb-4">Monthly Budget</h3>
+        <div id="budget-breakdown">
+          <p class="text-sm text-gray-400 text-center py-6">Loading...</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="text-base font-bold mb-4">6-Month Trend</h3>
+        <div style="height:260px">
+          <canvas id="trend-chart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Net Worth ──────────────────────────────────────────────────── -->
+    <div class="card mb-5">
+      <h3 class="text-base font-bold mb-4">
+        <i class="fas fa-balance-scale mr-1.5 text-purple-brand"></i>Net Worth
+      </h3>
+      <div id="networth-section">
+        <p class="text-sm text-gray-400 text-center py-6">Loading...</p>
+      </div>
+    </div>
+
+    <!-- ── DCA Calculator ─────────────────────────────────────────────── -->
+    <div class="card">
+      <h3 class="text-base font-bold mb-1">
+        <i class="fas fa-chart-line mr-1.5 text-purple-brand"></i>DCA Simulator
+      </h3>
+      <p class="text-xs text-gray-400 mb-5">Compound interest projection — stay motivated to invest</p>
+
+      <!-- Sliders -->
+      <div class="grid sm:grid-cols-3 gap-5 mb-6">
+
+        <div>
+          <div class="flex justify-between items-baseline mb-2">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Monthly</label>
+            <span id="dca-monthly-val" class="text-sm font-bold text-purple-brand">2tr/mo</span>
+          </div>
+          <input id="dca-monthly" type="range" min="100" max="20000" step="100" value="2000"
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>100k</span><span>20tr</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-baseline mb-2">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Return %</label>
+            <span id="dca-rate-val" class="text-sm font-bold text-purple-brand">10%/yr</span>
+          </div>
+          <input id="dca-rate" type="range" min="1" max="25" step="0.5" value="10"
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>1%</span><span>25%</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-baseline mb-2">
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Years</label>
+            <span id="dca-years-val" class="text-sm font-bold text-purple-brand">20 yrs</span>
+          </div>
+          <input id="dca-years" type="range" min="1" max="40" step="1" value="20"
+            class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>1yr</span><span>40yr</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Results row -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-900/50 p-3 text-center">
+          <p class="text-xs text-gray-400 mb-1">Total Invested</p>
+          <p id="dca-invested" class="text-base font-bold text-gray-600 dark:text-gray-300">—</p>
+        </div>
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-900/50 p-3 text-center">
+          <p class="text-xs text-gray-400 mb-1">Final Value</p>
+          <p id="dca-final" class="text-base font-bold text-purple-brand">—</p>
+        </div>
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-900/50 p-3 text-center">
+          <p class="text-xs text-gray-400 mb-1">Profit</p>
+          <p id="dca-profit" class="text-base font-bold text-green-500">—</p>
+        </div>
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-900/50 p-3 text-center">
+          <p class="text-xs text-gray-400 mb-1">Multiplier</p>
+          <p id="dca-mult" class="text-base font-bold text-amber-500">—</p>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div style="height:260px">
+        <canvas id="dca-chart"></canvas>
+      </div>
+
+    </div>
+
+  </div><!-- /container -->
+
+  <script src="js/finance-app.js"></script>
+</body>
+</html>
