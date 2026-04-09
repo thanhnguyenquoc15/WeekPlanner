@@ -259,3 +259,60 @@ function daysLeftInMonth() {
   const t = new Date();
   return new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate() - t.getDate();
 }
+
+// ── Seed dummy data ───────────────────────────────────────────────────
+// Run this ONCE from the Apps Script editor to populate Assets,
+// Liabilities, and Loans Given with sample data.
+// Select "seedDummyData" in the function dropdown and click ▶ Run.
+function seedDummyData() {
+  const today = fmtDate(new Date());
+
+  // ── Assets ────────────────────────────────────────────────────────
+  // Columns: id | name | type | value_vnd | currency | native_amount | notes | last_updated
+  const aSheet = SS.getSheetByName('Assets');
+  if (aSheet) {
+    // Clear existing data rows (keep header)
+    const aLast = aSheet.getLastRow();
+    if (aLast > 1) aSheet.getRange(2, 1, aLast - 1, 8).clearContent();
+
+    aSheet.getRange(2, 1, 7, 8).setValues([
+      ['asset_btc',   'Bitcoin',           'Crypto',       45000000,  'VND', 45000000,  'BTC holdings',       today],
+      ['asset_eth',   'Ethereum',          'Crypto',       12000000,  'VND', 12000000,  'ETH holdings',       today],
+      ['asset_re1',   'Apartment Deposit', 'Real Estate',  200000000, 'VND', 200000000, 'Deposit at block B', today],
+      ['asset_sav',   'Vietcombank Savings','Savings',     85000000,  'VND', 85000000,  '6-month term',       today],
+      ['asset_cash',  'Cash on Hand',      'Cash',         5000000,   'VND', 5000000,   'Wallet + home',      today],
+      ['asset_bank1', 'Techcombank',       'Bank Account', 32000000,  'VND', 32000000,  'Main account',       today],
+      ['asset_bank2', 'MB Bank',           'Bank Account', 18000000,  'VND', 18000000,  'Secondary',          today],
+    ]);
+  }
+
+  // ── Liabilities ───────────────────────────────────────────────────
+  // Columns: id | name | creditor | principal | current_balance | annual_rate_pct |
+  //          payment_type | fixed_monthly | months_remaining | start_date | notes | active
+  const lSheet = SS.getSheetByName('Liabilities');
+  if (lSheet) {
+    const lLast = lSheet.getLastRow();
+    if (lLast > 1) lSheet.getRange(2, 1, lLast - 1, 12).clearContent();
+
+    lSheet.getRange(2, 1, 3, 12).setValues([
+      ['liab_1', 'Family Loan',     'Uncle Minh',  200000000, 200000000, 8,  'interest_only', 0,       0,  '2024-01-01', 'Interest only, pay when able', 'TRUE'],
+      ['liab_2', 'Friend Loan',     'Anh Duc',     100000000, 100000000, 10, 'interest_only', 0,       0,  '2024-06-01', 'Interest only monthly',       'TRUE'],
+      ['liab_3', 'Monthly Payment', 'Bank VPBank',  150000000, 150000000, 6,  'amortizing',   5000000, 30, '2023-07-01', '5tr/month, 30 months left',   'TRUE'],
+    ]);
+  }
+
+  // ── Loans Given ───────────────────────────────────────────────────
+  // Columns: id | borrower | principal | current_balance | annual_rate_pct | start_date | notes | active
+  const lgSheet = SS.getSheetByName('Loans Given');
+  if (lgSheet) {
+    const lgLast = lgSheet.getLastRow();
+    if (lgLast > 1) lgSheet.getRange(2, 1, lgLast - 1, 8).clearContent();
+
+    lgSheet.getRange(2, 1, 2, 8).setValues([
+      ['loan_1', 'Em Tuan',  30000000, 30000000, 6, '2024-03-01', 'Lend for motorbike', 'TRUE'],
+      ['loan_2', 'Chi Lan',  15000000, 15000000, 8, '2024-09-01', 'Personal loan',      'TRUE'],
+    ]);
+  }
+
+  Logger.log('Dummy data seeded successfully.');
+}
