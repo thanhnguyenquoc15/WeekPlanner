@@ -1,6 +1,10 @@
-// ── App-wide constants ─────────────────────────────────────────────
-export const YEARLY_GOAL_KM = 500;
-export const RACE_DATE      = new Date('2026-05-10');
+// ── Runtime config (from js/finance-config.js, gitignored) ────────
+const _c = window.APP_CONFIG || window.FINANCE_CONFIG || {};
+
+// ── Running goals ──────────────────────────────────────────────────
+export const YEARLY_GOAL_KM = _c.yearlyGoalKm  ?? 500;
+export const RACE_DATE      = new Date(_c.raceDate ?? '2026-05-10');
+export const RACE_NAME      = _c.raceName      ?? 'May 10 — 21km @ 6:45 /km';
 
 // ── Identity pillars ───────────────────────────────────────────────
 export const IDENTITY_META = {
@@ -24,7 +28,5 @@ export const STORAGE_KEYS = {
 };
 
 // ── Finance ────────────────────────────────────────────────────────
-// Change BOT_URL when switching from ngrok to Mac mini local IP
-export const BOT_URL          = 'https://anastacia-inobservant-penicillately.ngrok-free.dev';
-export const DAILY_BUDGET_VND = 350_000;
-export const WEEKLY_BUDGET_VND = DAILY_BUDGET_VND * 7;   // 2,450,000đ
+export const DAILY_BUDGET_VND  = _c.dailyBudgetVnd ?? 350_000;
+export const WEEKLY_BUDGET_VND = DAILY_BUDGET_VND * 7;

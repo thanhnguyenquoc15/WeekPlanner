@@ -6,7 +6,7 @@
  * Offline / no config: silently falls back to localStorage only.
  */
 
-const _cfg      = window.FINANCE_CONFIG || {};
+const _cfg      = window.APP_CONFIG || window.FINANCE_CONFIG || {};
 const _BASE_URL = _cfg.appsScriptUrl || '';
 const _TOKEN    = _cfg.token || '';
 

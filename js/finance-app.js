@@ -3,7 +3,7 @@
 // ============================================================
 
 // URL + token loaded from js/finance-config.js (gitignored — never hardcoded here)
-const _cfg            = window.FINANCE_CONFIG || {};
+const _cfg            = window.APP_CONFIG || window.FINANCE_CONFIG || {};
 const APPS_SCRIPT_URL = _cfg.appsScriptUrl || 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL';
 const API_TOKEN       = _cfg.token         || '';
 const DAILY_BUDGET    = 350_000;
