@@ -41,12 +41,19 @@ function doGet(e) {
 
   try {
     switch (action) {
-      case 'overview':  result = getOverview(p.month, p.today);  break;
-      case 'trend':     result = getMonthlyTrend();      break;
-      case 'networth':  result = getNetWorth();          break;
-      case 'logspend':  result = logSpend(p);            break;
-      case 'debug':     result = debugSheets();         break;
-      default:          result = { error: 'Unknown action: ' + action };
+      case 'overview':   result = getOverview(p.month, p.today); break;
+      case 'trend':      result = getMonthlyTrend();             break;
+      case 'networth':   result = getNetWorth();                 break;
+      case 'logspend':   result = logSpend(p);                   break;
+      // ── Runs ──────────────────────────────────────────────────────
+      case 'getruns':    result = getRuns();                      break;
+      case 'addrun':     result = addRun(p);                      break;
+      case 'deleterun':  result = deleteRun(p.id);                break;
+      // ── Habits ────────────────────────────────────────────────────
+      case 'gethabits':  result = getHabits();                    break;
+      case 'sethabit':   result = setHabit(p.date, p.progress);   break;
+      case 'debug':      result = debugSheets();                  break;
+      default:           result = { error: 'Unknown action: ' + action };
     }
   } catch (err) {
     result = { error: err.message };
@@ -260,6 +267,99 @@ function logSpend(params) {
   ]]);
 
   return { ok: true, row: nextRow, amount, date, bucket: bucketId };
+}
+
+// ── Runs ──────────────────────────────────────────────────────────────
+// Sheet columns: id | date | dist | dur | pace | cal | src
+
+function getRunsSheet() {
+  let sh = SS.getSheetByName('Runs');
+  if (!sh) {
+    sh = SS.insertSheet('Runs');
+    sh.getRange(1, 1, 1, 7).setValues([['id','date','dist','dur','pace','cal','src']]);
+    sh.getRange(1, 1, 1, 7).setFontWeight('bold');
+  }
+  return sh;
+}
+
+function getRuns() {
+  const sh   = getRunsSheet();
+  const rows = sh.getDataRange().getValues().slice(1);
+  return rows
+    .filter(r => r[0])
+    .map(r => ({
+      id:   Number(r[0]),
+      date: String(r[1]),
+      dist: parseFloat(r[2]) || 0,
+      dur:  parseFloat(r[3]) || 0,
+      pace: String(r[4]),
+      cal:  parseInt(r[5])   || 0,
+      src:  String(r[6] || ''),
+    }))
+    .sort((a, b) => b.id - a.id);   // newest first
+}
+
+function addRun(p) {
+  const sh   = getRunsSheet();
+  const id   = parseInt(p.id)   || Date.now();
+  const dist = parseFloat(p.dist) || 0;
+  const dur  = parseFloat(p.dur)  || 0;
+  if (dist <= 0 || dur <= 0) return { error: 'Invalid dist/dur' };
+  sh.appendRow([id, p.date || fmtDate(new Date()), dist, dur, p.pace || '', parseInt(p.cal) || 0, p.src || '']);
+  return { ok: true, id };
+}
+
+function deleteRun(id) {
+  const sh   = getRunsSheet();
+  const rows = sh.getDataRange().getValues();
+  for (let i = rows.length - 1; i >= 1; i--) {
+    if (String(rows[i][0]) === String(id)) {
+      sh.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { error: 'Run not found' };
+}
+
+// ── Habits ────────────────────────────────────────────────────────────
+// Sheet columns: date | progress_json
+// progress_json is a JSON array of checked indices, e.g. [0,2,5]
+
+function getHabitsSheet() {
+  let sh = SS.getSheetByName('Habits');
+  if (!sh) {
+    sh = SS.insertSheet('Habits');
+    sh.getRange(1, 1, 1, 2).setValues([['date', 'progress_json']]);
+    sh.getRange(1, 1, 1, 2).setFontWeight('bold');
+  }
+  return sh;
+}
+
+function getHabits() {
+  const sh   = getHabitsSheet();
+  const rows = sh.getDataRange().getValues().slice(1);
+  const out  = {};
+  for (const r of rows) {
+    if (!r[0]) continue;
+    const date = r[0] instanceof Date ? fmtDate(r[0]) : String(r[0]);
+    try { out[date] = JSON.parse(r[1]); } catch { out[date] = []; }
+  }
+  return out;
+}
+
+function setHabit(date, progressJson) {
+  if (!date) return { error: 'Missing date' };
+  const sh   = getHabitsSheet();
+  const rows = sh.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    const d = rows[i][0] instanceof Date ? fmtDate(rows[i][0]) : String(rows[i][0]);
+    if (d === date) {
+      sh.getRange(i + 1, 2).setValue(progressJson || '[]');
+      return { ok: true, updated: true };
+    }
+  }
+  sh.appendRow([date, progressJson || '[]']);
+  return { ok: true, inserted: true };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────

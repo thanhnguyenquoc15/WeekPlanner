@@ -1,7 +1,8 @@
 import { FULL_TRAINING_PLAN } from './plan_data.js';
 import { Storage }            from './storage.js';
 import { YEARLY_GOAL_KM, RACE_DATE, STORAGE_KEYS } from './config.js';
-import { identityPillHtml } from './identity.js';
+import { identityPillHtml }  from './identity.js';
+import { pullRuns, pushRun, removeRun as cloudRemoveRun, pullHabits, pushHabit } from './sync.js';
 
 // ── Security helpers ───────────────────────────────────────────────
 // Escape HTML special chars before injecting into innerHTML
@@ -347,6 +348,7 @@ function toggleHabit(id) {
 function deleteRun(id) {
     if (!confirm('Delete this run?')) return;
     runStorage.remove(id);
+    cloudRemoveRun(id);
     renderAll();
 }
 
@@ -434,6 +436,7 @@ function importGPXFile(file, onSuccess) {
         try {
             const run = parseGPX(ev.target.result);
             runStorage.add(run);
+            pushRun(run);
             renderAll();
             onSuccess?.(run);
         } catch (err) {
@@ -506,7 +509,9 @@ function setupRunForm() {
             return;
         }
         errEl?.classList.add('hidden');
-        runStorage.add({ id: Date.now(), date, dist, dur, pace: calculatePace(dist, dur) });
+        const run = { id: Date.now(), date, dist, dur, pace: calculatePace(dist, dur) };
+        runStorage.add(run);
+        pushRun(run);
         renderAll();
         form.reset();
         document.getElementById('run-date').valueAsDate = new Date();
@@ -660,6 +665,7 @@ function importRunFromQueryParams() {
     };
     console.log('[import] saving run:', run);
     runStorage.add(run);
+    pushRun(run);
     console.log('[import] done. total runs in storage:', runStorage.load()?.length);
 
     const banner = document.getElementById('gpx-drop-banner');

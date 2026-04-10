@@ -3,6 +3,7 @@ import { workoutDetails }           from './exercises.js';
 import { updateChartsTheme }        from './charts.js';
 import { STORAGE_KEYS }             from './config.js';
 import { activityPillarIconHtml, IDENTITY_META, ACTIVITY_PILLARS } from './identity.js';
+import { pushHabit }                from './sync.js';
 
 // ── Security helper ────────────────────────────────────────────────
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -507,6 +508,7 @@ export function initGrindingWindow() {
 // ── Central progress sync — saves + updates both modal and inline ──
 function applyProgress(day, checkedIndices) {
     saveProgress(day, checkedIndices);
+    pushHabit(day, checkedIndices);
 
     // Sync modal (progress bar + checkbox states) if it's open for this day
     if (scheduleModal?.classList.contains('is-open') && scheduleModal?.dataset.day === day) {

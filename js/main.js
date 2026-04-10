@@ -8,6 +8,7 @@ import { loadWeekData, loadGoalsData, loadPerfectDay, seedRunsIfEmpty } from './
 import { Storage }                                     from './storage.js';
 import { STORAGE_KEYS }                                from './config.js';
 import { initBackup }                                  from './backup.js';
+import { pullRuns, pullHabits }                        from './sync.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply theme immediately to avoid flash
@@ -23,6 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadPerfectDay(),
     ]);
     seedRunsIfEmpty(runStorage).catch(e => console.warn('[main] seed runs failed:', e));
+
+    // Pull cloud data first (non-blocking — app renders from localStorage immediately,
+    // then re-renders once cloud data arrives)
+    pullRuns(runStorage).then(runs => { if (runs) initHabits(weekData); });
+    pullHabits();
 
     initBackup();
     initUI(weekData.scheduleData);
