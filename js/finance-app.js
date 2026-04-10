@@ -137,7 +137,7 @@ async function loadAll() {
   setStatus('loading');
   try {
     const [overview, trend, networth] = await Promise.all([
-      api('overview', { month: _currentMonth }),
+      api('overview', { month: _currentMonth, today: todayKey() }),
       api('trend'),
       api('networth'),
     ]);

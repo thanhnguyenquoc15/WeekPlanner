@@ -22,7 +22,7 @@ function doGet(e) {
 
   try {
     switch (action) {
-      case 'overview':  result = getOverview(p.month);  break;
+      case 'overview':  result = getOverview(p.month, p.today);  break;
       case 'trend':     result = getMonthlyTrend();      break;
       case 'networth':  result = getNetWorth();          break;
       case 'logspend':  result = logSpend(p);            break;
@@ -47,11 +47,13 @@ function doGet(e) {
 }
 
 // ── Overview: budget + spending for a given month ────────────────────
-function getOverview(monthKey) {
+function getOverview(monthKey, todayStr) {
   if (!monthKey) {
     const now = new Date();
     monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
   }
+  // Use browser-supplied today to avoid server timezone mismatch (e.g. UTC vs UTC+7)
+  const todayKey = todayStr || fmtDate(new Date());
 
   const budgetSheet = SS.getSheetByName('Budget Config');
   const txSheet     = SS.getSheetByName('Transactions');
@@ -93,8 +95,8 @@ function getOverview(monthKey) {
     if (dateKey) dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + amount;
   }
 
-  // Build last-7-days array
-  const today = new Date();
+  // Build last-7-days array using browser-supplied today (avoids server TZ offset)
+  const today = new Date(todayKey + 'T12:00:00');
   const days  = [];
   for (let i = 6; i >= 0; i--) {
     const d   = new Date(today);
