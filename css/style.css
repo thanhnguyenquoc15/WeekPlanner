@@ -2,6 +2,77 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   THEME SYSTEM  —  data-theme on <html>
+   dark (default) | midnight | mocha | light
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Midnight: deep navy ──────────────────────────────────────────── */
+[data-theme="midnight"] body       { background-color: #0f172a; color: #e2e8f0; }
+[data-theme="midnight"] .planner-card { background: #1e293b; border-color: #334155; }
+[data-theme="midnight"] .run-card,
+[data-theme="midnight"] .run-detail-side { background: rgba(15,23,42,0.85); border-color: rgba(51,65,85,0.6); }
+[data-theme="midnight"] .run-detail-pop  { background: rgba(15,23,42,0.97); border-color: rgba(99,102,241,0.3); }
+[data-theme="midnight"] .habit-row       { background: rgba(30,41,59,0.6); border-color: #334155; }
+[data-theme="midnight"] .app-tab-btn.active { background: #4f46e5; }
+[data-theme="midnight"] .text-purple-brand  { color: #818cf8; }
+
+/* ── Mocha: warm dark coffee ─────────────────────────────────────── */
+[data-theme="mocha"] body          { background-color: #1a1008; color: #e8dcc8; }
+[data-theme="mocha"] .planner-card { background: #2a1f14; border-color: #3d2e1e; }
+[data-theme="mocha"] .run-card,
+[data-theme="mocha"] .run-detail-side { background: rgba(26,16,8,0.85); border-color: rgba(61,46,30,0.6); }
+[data-theme="mocha"] .run-detail-pop  { background: rgba(26,16,8,0.97); border-color: rgba(180,120,60,0.3); }
+[data-theme="mocha"] .habit-row       { background: rgba(42,31,20,0.6); border-color: #3d2e1e; }
+[data-theme="mocha"] .app-tab-btn     { color: #a89070; }
+[data-theme="mocha"] .app-tab-btn.active { background: #b45309; box-shadow: 0 2px 8px rgba(180,83,9,0.4); }
+[data-theme="mocha"] .text-purple-brand  { color: #d97706; }
+[data-theme="mocha"] .run-mini-low  { background: rgba(217,119,6,0.3); }
+[data-theme="mocha"] .run-mini-mid  { background: rgba(217,119,6,0.6); }
+[data-theme="mocha"] .run-mini-high { background: rgba(217,119,6,1); box-shadow: 0 0 6px rgba(217,119,6,0.5); }
+[data-theme="mocha"] .run-mini-run.active { outline-color: #d97706; }
+
+/* ── Light: clean fixed ───────────────────────────────────────────── */
+[data-theme="light"] body          { background-color: #f1f5f9; color: #1e293b; }
+[data-theme="light"] .planner-card { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+/* Run components — override hardcoded dark backgrounds */
+[data-theme="light"] .run-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+[data-theme="light"] .run-detail-side {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+[data-theme="light"] .run-detail-pop {
+  background: #ffffff;
+  border-color: #ddd6fe;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
+/* Fix text inside run components for light bg */
+[data-theme="light"] .run-card p,
+[data-theme="light"] .run-detail-side p,
+[data-theme="light"] .run-detail-pop p   { color: #1e293b; }
+[data-theme="light"] .run-mini-label     { color: #475569; }
+[data-theme="light"] .run-mini-dow span  { color: #64748b; }
+[data-theme="light"] .run-mini-cell      { color: #64748b; }
+[data-theme="light"] .run-mini-rest      { background: rgba(100,116,139,0.12); }
+[data-theme="light"] .run-detail-close   { color: #64748b; }
+[data-theme="light"] .run-detail-close:hover { color: #1e293b; }
+/* Calendar rows */
+[data-theme="light"] .cal-row           { border-color: #e2e8f0; }
+[data-theme="light"] .habit-row         { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+[data-theme="light"] .habit-row:hover   { background: #f1f5f9; }
+/* Today schedule */
+[data-theme="light"] .today-sched-row   { background: #ffffff; border-color: #e2e8f0; color: #1e293b; }
+[data-theme="light"] .today-rope-track  { background: #e2e8f0; }
+[data-theme="light"] .today-rope-burned { background: linear-gradient(#7c3aed, #a78bfa); }
+/* Tab nav */
+[data-theme="light"] .app-tab-btn       { color: #475569; }
+[data-theme="light"] .app-tab-btn:hover { background: rgba(117,66,168,0.08); color: #7542A8; }
+[data-theme="light"] .app-tab-btn.active { background: #7542A8; color: #fff; }
+
 /* ── Brand purple (light / dark) ─────────────────────────────────── */
 .text-purple-brand        { color: #7542A8; }
 .dark .text-purple-brand  { color: #a78bfa; }

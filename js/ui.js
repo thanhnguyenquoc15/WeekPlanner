@@ -13,18 +13,36 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
 let _scheduleData      = {};
 let _todayScheduleTimes = []; // kept for rope re-paint when tab becomes visible
 
-// ── Dark mode ──────────────────────────────────────────────────────
+// ── Theme system ───────────────────────────────────────────────────
+// Themes cycle: dark → midnight → mocha → light → dark
+const THEMES = [
+    { name: 'dark',     icon: 'fa-moon',        dark: true  },
+    { name: 'midnight', icon: 'fa-star',         dark: true  },
+    { name: 'mocha',    icon: 'fa-mug-hot',      dark: true  },
+    { name: 'light',    icon: 'fa-sun',          dark: false },
+];
+
 export function initDarkMode() {
-    const saved = localStorage.getItem(STORAGE_KEYS.darkMode);
-    const isDark = saved === 'true';
-    applyDark(isDark);
+    const saved = localStorage.getItem(STORAGE_KEYS.darkMode) ?? 'dark';
+    applyTheme(saved);
 
     document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
-        const next = !document.documentElement.classList.contains('dark');
-        applyDark(next);
-        localStorage.setItem(STORAGE_KEYS.darkMode, next);
-        updateChartsTheme(next);
+        const current = document.documentElement.dataset.theme || 'dark';
+        const idx     = THEMES.findIndex(t => t.name === current);
+        const next    = THEMES[(idx + 1) % THEMES.length];
+        applyTheme(next.name);
+        localStorage.setItem(STORAGE_KEYS.darkMode, next.name);
+        updateChartsTheme(next.dark);
     });
+}
+
+function applyTheme(name) {
+    const theme = THEMES.find(t => t.name === name) || THEMES[0];
+    const html  = document.documentElement;
+    html.dataset.theme = theme.name;
+    html.classList.toggle('dark', theme.dark);
+    const icon = document.getElementById('dark-mode-icon');
+    if (icon) icon.className = `fas ${theme.icon} text-lg w-5 text-center`;
 }
 
 function applyDark(isDark) {
