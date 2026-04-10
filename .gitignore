@@ -1,0 +1,4 @@
+# Local config — contains API URL and secret token, never commit
+js/finance-config.js
+.DS_Store
+tasks/

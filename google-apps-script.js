@@ -14,10 +14,27 @@
 
 const SS = SpreadsheetApp.getActiveSpreadsheet();
 
+// ── Auth token ────────────────────────────────────────────────────────
+// Must match window.FINANCE_CONFIG.token in js/finance-config.js (gitignored)
+const VALID_TOKEN = 'aa3d59f4cea5934ab131e9b6c0413de7a69619f16127721c25813ca9ffd60a1e';
+
 function doGet(e) {
   const p      = e.parameter || {};
   const action = (p.action || 'overview').toLowerCase();
-  const cb     = p.callback; // JSONP callback name
+  const rawCb  = p.callback || '';
+  // Validate callback: only allow safe JS identifier characters
+  const cb = /^[A-Za-z_$][A-Za-z0-9_$.]*$/.test(rawCb) ? rawCb : '';
+
+  // ── Token auth ────────────────────────────────────────────────────
+  // 'debug' is exempted so it can be called from the Apps Script editor
+  if (action !== 'debug' && p.token !== VALID_TOKEN) {
+    const deny = JSON.stringify({ error: 'Unauthorized' });
+    if (cb) return ContentService.createTextOutput(cb + '(' + deny + ')')
+                   .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    return ContentService.createTextOutput(deny)
+                   .setMimeType(ContentService.MimeType.JSON);
+  }
+
   let result;
 
   try {
@@ -26,6 +43,7 @@ function doGet(e) {
       case 'trend':     result = getMonthlyTrend();      break;
       case 'networth':  result = getNetWorth();          break;
       case 'logspend':  result = logSpend(p);            break;
+      case 'debug':     result = debugSheets();         break;
       default:          result = { error: 'Unknown action: ' + action };
     }
   } catch (err) {
@@ -86,10 +104,10 @@ function getOverview(monthKey, todayStr) {
   for (const r of txRows) {
     if (r.length < 15) continue;
     if (String(r[13]).toUpperCase() !== 'TRUE') continue;  // N: confirmed
-    if (String(r[14]) !== monthKey) continue;               // O: month_key
+    if (extractMonthKey(r[14]) !== monthKey) continue;      // O: month_key (may be Date obj)
     const amount   = parseAmt(r[7]);                        // H: amount
     const bucketId = String(r[10]);                         // K: parent category
-    const dateKey  = extractDate(String(r[1]));             // B: date
+    const dateKey  = extractDateKey(r[1]);                  // B: date (may be Date obj)
 
     if (buckets[bucketId]) buckets[bucketId].spent += amount;
     if (dateKey) dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + amount;
@@ -146,7 +164,7 @@ function getMonthlyTrend() {
 
   for (const r of txRows) {
     if (r.length < 15 || String(r[13]).toUpperCase() !== 'TRUE') continue;
-    const mk = String(r[14]);
+    const mk = extractMonthKey(r[14]);
     if (spend[mk] !== undefined) spend[mk] += parseAmt(r[7]);
   }
   for (const r of budgetRows) {
@@ -251,7 +269,10 @@ function fmtDate(d) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
-function extractDate(s) {
+// Extract YYYY-MM-DD from either a Date object or a string
+function extractDateKey(val) {
+  if (val instanceof Date) return fmtDate(val);
+  const s = String(val);
   const iso = s.match(/(\d{4}-\d{2}-\d{2})/);
   if (iso) return iso[1];
   const vn = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
@@ -259,9 +280,38 @@ function extractDate(s) {
   return null;
 }
 
+// Extract YYYY-MM from either a Date object or a string like "2026-04"
+function extractMonthKey(val) {
+  if (val instanceof Date) {
+    return val.getFullYear() + '-' + String(val.getMonth() + 1).padStart(2, '0');
+  }
+  const s = String(val).trim();
+  const m = s.match(/^(\d{4}-\d{2})/);
+  return m ? m[1] : s;
+}
+
+// Legacy alias (keep for any external callers)
+function extractDate(s) {
+  return extractDateKey(s);
+}
+
 function daysLeftInMonth() {
   const t = new Date();
   return new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate() - t.getDate();
+}
+
+// ── Debug: return raw sheet data ─────────────────────────────────────
+function debugSheets() {
+  const txSheet     = SS.getSheetByName('Transactions');
+  const budgetSheet = SS.getSheetByName('Budget Config');
+  const txRows  = txSheet     ? txSheet.getDataRange().getValues()     : [];
+  const budRows = budgetSheet ? budgetSheet.getDataRange().getValues() : [];
+  return {
+    tx_row_count:     txRows.length,
+    tx_first_5_rows:  txRows.slice(0, 5).map(r => r.map(v => String(v))),
+    bud_row_count:    budRows.length,
+    bud_first_3_rows: budRows.slice(0, 3).map(r => r.map(v => String(v))),
+  };
 }
 
 // ── Seed dummy data ───────────────────────────────────────────────────

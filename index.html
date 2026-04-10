@@ -23,10 +23,12 @@
         <h1 class="text-4xl md:text-5xl font-black text-purple-brand">MONK MODE</h1>
         <p id="week-range-label" class="text-sm text-gray-500 dark:text-gray-400 mt-1">The Architecture of Discipline</p>
       </div>
-      <button id="dark-mode-toggle" title="Toggle dark mode"
-        class="mt-2 p-2.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-        <i id="dark-mode-icon" class="fas fa-moon text-lg w-5 text-center"></i>
-      </button>
+      <div class="flex items-center gap-2 mt-2">
+        <button id="dark-mode-toggle" title="Toggle dark mode"
+          class="p-2.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          <i id="dark-mode-icon" class="fas fa-moon text-lg w-5 text-center"></i>
+        </button>
+      </div>
     </header>
 
     <!-- ── App Tab Navigation ─────────────────────────────────────── -->
@@ -34,7 +36,8 @@
       <button class="app-tab-btn" data-app-tab="planner"><i class="fas fa-calendar-week mr-1.5"></i>Planner</button>
       <button class="app-tab-btn" data-app-tab="today"><i class="fas fa-bullseye mr-1.5"></i>Today</button>
       <button class="app-tab-btn" data-app-tab="running"><i class="fas fa-running mr-1.5"></i>Running</button>
-      <a href="finance.html" class="app-tab-btn"><i class="fas fa-wallet mr-1.5"></i>Financial</a>
+      <button class="app-tab-btn" data-app-tab="blueprint"><i class="fas fa-map mr-1.5"></i>Blueprint</button>
+      <a href="finance.html" class="app-tab-btn" id="financial-tab-link"><i class="fas fa-wallet mr-1.5"></i>Financial</a>
     </nav>
 
     <!-- ════════════════════════════════════════════════════════════ -->
@@ -49,34 +52,6 @@
         </div>
       </section>
 
-      <!-- ── Daily Habits Drawer ──────────────────────────────────── -->
-      <section class="mb-10">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <button id="habits-drawer-toggle"
-            class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-check-double text-indigo-600 dark:text-indigo-400 text-sm"></i>
-              </div>
-              <div class="text-left">
-                <p class="font-bold text-gray-800 dark:text-gray-200 text-sm">Weekly Progress & Core Habits</p>
-                <p class="text-xs text-gray-400 mt-0.5">Track your schedule and daily habits</p>
-              </div>
-            </div>
-            <i id="habits-drawer-chevron" class="fas fa-chevron-up text-gray-400 transition-transform duration-300"></i>
-          </button>
-          <div id="habits-drawer-body" class="habits-drawer-body open">
-            <div class="px-5 pb-5 border-t border-gray-100 dark:border-gray-700">
-              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 pt-5">Weekly Schedule</h3>
-              <div class="space-y-2" id="weekly-calendar-list"></div>
-              <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700">
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Core Habits (Daily)</h4>
-                <div class="space-y-2" id="habits-list"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section class="mb-10">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -184,64 +159,108 @@
     <!-- ════════════════════════════════════════════════════════════ -->
     <!-- TAB: TODAY (Habits Dashboard)                               -->
     <!-- ════════════════════════════════════════════════════════════ -->
-    <div id="app-tab-today" class="app-tab-content hidden space-y-5">
-      <div class="rounded-2xl p-6 bg-gradient-to-br from-indigo-900/60 to-gray-900 border border-indigo-500/40 shadow-xl">
-        <div class="mb-5">
-          <h2 id="today-name" class="text-2xl font-bold text-white tracking-tight">—</h2>
-          <p class="text-xs text-indigo-300 font-bold uppercase tracking-widest mt-0.5">Today's Discipline Mission ⚔️</p>
-        </div>
-        <div class="space-y-3">
-          <div class="bg-black/25 p-4 rounded-xl border border-white/10 flex items-start gap-3">
-            <div class="bg-purple-600/30 p-2 rounded-lg text-purple-300 flex-shrink-0"><i class="fas fa-running"></i></div>
-            <div>
-              <p class="text-xs text-gray-400 font-bold uppercase">Fitness</p>
-              <p id="today-fitness" class="text-sm font-semibold text-gray-100 mt-0.5">—</p>
-            </div>
-          </div>
-          <div class="bg-black/25 p-4 rounded-xl border border-white/10 flex items-start gap-3">
-            <div class="bg-blue-600/30 p-2 rounded-lg text-blue-300 flex-shrink-0"><i class="fas fa-cloud"></i></div>
-            <div>
-              <p class="text-xs text-gray-400 font-bold uppercase">SRE Study</p>
-              <p id="today-sre" class="text-sm font-semibold text-gray-100 mt-0.5">—</p>
-            </div>
-          </div>
-          <div class="bg-black/25 p-4 rounded-xl border border-white/10 flex items-start gap-3">
-            <div class="bg-green-600/30 p-2 rounded-lg text-green-300 flex-shrink-0"><i class="fas fa-utensils"></i></div>
-            <div>
-              <p class="text-xs text-gray-400 font-bold uppercase">Nutrition</p>
-              <p id="today-nutrition" class="text-sm font-semibold text-gray-100 mt-0.5">—</p>
-            </div>
-          </div>
-        </div>
-        <div class="mt-5 grid grid-cols-2 gap-3">
-          <button onclick="window.toggleHabit(101)" id="dash-check-morning"
-            class="py-3 rounded-xl border border-gray-600 bg-white/5 text-xs font-bold text-gray-300 hover:bg-white/10 transition-all">
-            <i class="fas fa-sun mr-1"></i> 5:30 AM Wake
-          </button>
-          <button onclick="window.toggleHabit(103)" id="dash-check-study"
-            class="py-3 rounded-xl border border-gray-600 bg-white/5 text-xs font-bold text-gray-300 hover:bg-white/10 transition-all">
-            <i class="fas fa-laptop-code mr-1"></i> SRE Mastery
-          </button>
-        </div>
-      </div>
+    <div id="app-tab-today" class="app-tab-content hidden">
+      <div class="lg:grid lg:grid-cols-[1fr_300px] lg:gap-5 lg:items-start">
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="planner-card cursor-pointer hover:shadow-lg transition-shadow" onclick="document.querySelector('[data-app-tab=running]').click()">
-          <p class="text-xs text-gray-400 font-bold uppercase">Run Total</p>
-          <p id="dash-total-dist" class="text-2xl font-bold mt-1">0.0 km</p>
-        </div>
-        <div class="planner-card text-center flex flex-col justify-center">
-          <p class="text-xs text-gray-400 font-bold uppercase">Race Day</p>
-          <p id="race-countdown" class="text-xl font-bold text-purple-500 dark:text-purple-400 mt-1">— days</p>
-          <p class="text-xs text-gray-400 mt-0.5">to May 10 🏁</p>
-        </div>
-      </div>
+        <!-- ── LEFT: main content ──────────────────────────────── -->
+        <div class="space-y-5">
+
+          <!-- Full day schedule (inline, with notes) -->
+          <div class="rounded-2xl p-5 bg-gradient-to-br from-indigo-900/60 to-gray-900 border border-indigo-500/40 shadow-xl">
+            <div class="mb-4">
+              <h2 id="today-name" class="text-2xl font-bold text-white tracking-tight">—</h2>
+              <p class="text-xs text-indigo-300 font-bold uppercase tracking-widest mt-0.5">Today's Discipline Mission ⚔️</p>
+            </div>
+            <!-- Populated by renderTodayScheduleInline() in ui.js -->
+            <div id="today-schedule-inline"></div>
+          </div>
+
+          <!-- Weekly Progress & Core Habits -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <button id="habits-drawer-toggle"
+              class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-check-double text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                </div>
+                <div class="text-left">
+                  <p class="font-bold text-gray-800 dark:text-gray-200 text-sm">Weekly Progress & Core Habits</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Track your schedule and daily habits</p>
+                </div>
+              </div>
+              <i id="habits-drawer-chevron" class="fas fa-chevron-up text-gray-400 transition-transform duration-300"></i>
+            </button>
+            <div id="habits-drawer-body" class="habits-drawer-body open">
+              <div class="px-5 pb-5 border-t border-gray-100 dark:border-gray-700">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 pt-5">Weekly Schedule</h3>
+                <div class="space-y-2" id="weekly-calendar-list"></div>
+                <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700">
+                  <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Core Habits (Daily)</h4>
+                  <div class="space-y-2" id="habits-list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 1 Progress -->
+          <div id="goal-context-strip"></div>
+
+          <!-- Quick stats -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="planner-card cursor-pointer hover:shadow-lg transition-shadow" onclick="document.querySelector('[data-app-tab=running]').click()">
+              <p class="text-xs text-gray-400 font-bold uppercase">Run Total</p>
+              <p id="dash-total-dist" class="text-2xl font-bold mt-1">0.0 km</p>
+            </div>
+            <div class="planner-card text-center flex flex-col justify-center">
+              <p class="text-xs text-gray-400 font-bold uppercase">Race Day</p>
+              <p id="race-countdown" class="text-xl font-bold text-purple-500 dark:text-purple-400 mt-1">— days</p>
+              <p class="text-xs text-gray-400 mt-0.5">to May 10 🏁</p>
+            </div>
+          </div>
+
+        </div><!-- /LEFT -->
+
+        <!-- ── RIGHT: side dashboard ───────────────────────────── -->
+        <div class="space-y-4 mt-5 lg:mt-0 lg:sticky lg:top-4">
+
+          <!-- Week completion grid — populated by renderWeekDashboard() -->
+          <div id="week-dashboard" class="planner-card"></div>
+
+          <!-- Grinding clip window -->
+          <div class="planner-card overflow-hidden p-0">
+            <div class="grinding-screen">
+              <div id="grinding-placeholder" class="grinding-placeholder">
+                <i class="fas fa-play-circle text-3xl mb-2 opacity-50"></i>
+                <p class="text-xs font-bold uppercase tracking-wider">Grinding Clip</p>
+                <p class="text-xs opacity-40 mt-1">Paste URL below to activate</p>
+              </div>
+              <iframe id="grinding-frame" class="hidden w-full h-full rounded-none border-0"
+                      allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"></iframe>
+            </div>
+            <div class="px-3 py-2.5 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
+              <i class="fas fa-link text-xs text-gray-400 flex-shrink-0"></i>
+              <input id="grinding-url" type="text" placeholder="YouTube / video URL..."
+                class="flex-1 text-xs bg-transparent border-0 outline-none text-gray-500 dark:text-gray-400
+                       placeholder-gray-400 dark:placeholder-gray-600 focus:text-gray-800 dark:focus:text-gray-200
+                       transition-colors"/>
+              <button id="grinding-clear" class="text-gray-400 hover:text-red-400 transition-colors hidden">
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /RIGHT -->
+
+      </div><!-- /grid -->
     </div>
 
     <!-- ════════════════════════════════════════════════════════════ -->
     <!-- TAB: RUNNING                                                 -->
     <!-- ════════════════════════════════════════════════════════════ -->
     <div id="app-tab-running" class="app-tab-content hidden space-y-5">
+
+      <!-- GPX drop feedback banner -->
+      <div id="gpx-drop-banner" class="hidden text-center py-2 px-4 rounded-xl bg-green-900/40 border border-green-500/40 text-green-300 text-sm font-bold"></div>
 
       <div class="flex items-center justify-between bg-purple-900/20 dark:bg-purple-900/30 border border-purple-500/30 rounded-2xl p-5">
         <div>
@@ -273,6 +292,32 @@
         </div>
       </div>
 
+      <!-- Run history (directly below stats) -->
+      <div class="flex items-center justify-between px-1">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Run History</p>
+        <div class="flex gap-2 flex-wrap justify-end">
+          <label id="import-gpx-label"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors cursor-pointer"
+            title="Export .gpx from Garmin Connect then upload here">
+            <i class="fas fa-satellite-dish"></i> Garmin GPX
+            <input type="file" id="import-gpx-input" accept=".gpx" class="sr-only">
+          </label>
+          <button id="export-runs-btn"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+            title="Download runs.json">
+            <i class="fas fa-download"></i> Export
+          </button>
+          <label
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
+            title="Import runs.json">
+            <i class="fas fa-upload"></i> Import
+            <input type="file" id="import-runs-input" accept=".json" class="sr-only">
+          </label>
+        </div>
+      </div>
+
+      <div id="activities-list" class="space-y-3"></div>
+
       <div class="planner-card">
         <h3 class="text-lg font-bold mb-4">Log New Run</h3>
         <form id="run-form" class="grid grid-cols-2 gap-4">
@@ -298,25 +343,39 @@
         </form>
       </div>
 
-      <!-- Run history header + export / import -->
-      <div class="flex items-center justify-between px-1">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Run History</p>
-        <div class="flex gap-2">
-          <button id="export-runs-btn"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-            title="Download runs.json">
-            <i class="fas fa-download"></i> Export
-          </button>
-          <label
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
-            title="Import runs.json">
-            <i class="fas fa-upload"></i> Import
-            <input type="file" id="import-runs-input" accept=".json" class="sr-only">
-          </label>
+      <!-- ── Garmin one-click bookmarklet (collapsed by default) ──── -->
+      <div class="planner-card border-orange-500/30 dark:border-orange-500/20">
+        <button type="button" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i.toggle-icon').classList.toggle('fa-chevron-down'); this.querySelector('i.toggle-icon').classList.toggle('fa-chevron-up')"
+          class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-satellite-dish text-orange-500 dark:text-orange-400 text-sm"></i>
+            </div>
+            <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100">Garmin One-Click Import</h3>
+          </div>
+          <i class="fas fa-chevron-down toggle-icon text-gray-400 text-xs"></i>
+        </button>
+
+        <div class="hidden mt-4 space-y-3">
+          <p class="text-xs text-gray-400">Drag the button below to your bookmarks bar. Then open any Garmin activity and click it — done.</p>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">App URL <span class="text-gray-500">(auto-detected)</span></label>
+            <input id="bookmarklet-app-url" type="text"
+              class="w-full bg-gray-100 dark:bg-gray-700 rounded-lg p-2 text-xs border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-mono">
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <a id="garmin-bookmarklet-link" href="#"
+              draggable="true"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white text-xs font-black rounded-xl shadow transition-all select-none cursor-grab active:cursor-grabbing">
+              <i class="fas fa-bookmark"></i> + Add Run from Garmin
+            </a>
+          </div>
+          <div class="text-xs text-gray-500 bg-gray-50 dark:bg-gray-700/40 rounded-lg px-3 py-2.5 leading-relaxed">
+            <p class="font-semibold text-gray-400 mb-1">Setup (one time):</p>
+            <p>Drag the orange button to your bookmarks bar. Then: open any Garmin activity page → click the bookmark → your run imports here instantly.</p>
+          </div>
         </div>
       </div>
-
-      <div id="activities-list" class="space-y-3"></div>
 
       <!-- 6-Week Training Plan (collapsible) -->
       <div class="planner-card cursor-pointer select-none"
@@ -334,6 +393,16 @@
       </div>
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- TAB: BLUEPRINT                                               -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div id="app-tab-blueprint" class="app-tab-content hidden space-y-5">
+      <!-- Populated by blueprint.js -->
+      <div id="blueprint-identity-wall"></div>
+      <div id="blueprint-vision"></div>
+      <div id="blueprint-timeline"></div>
+      <div id="blueprint-perfect-day"></div>
+    </div>
 
   </div><!-- /container -->
 
@@ -389,6 +458,9 @@
       <div id="shopping-modal-body" class="p-5 overflow-y-auto"></div>
     </div>
   </div>
+
+  <!-- ── Reward popup (fixed, injected by ui.js showReward) ──────── -->
+  <div id="reward-popup" class="reward-popup"></div>
 
   <!-- js-yaml must load before the module so jsyaml global is available -->
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>

@@ -1,0 +1,88 @@
+{
+  "lifeBlueprint": {
+    "userProfile": {
+      "name": "A Determined Designer",
+      "role": "Quality Engineer",
+      "location": "Bien Hoa, Dong Nai, Vietnam",
+      "currentSalaryVND": 58000000,
+      "currentLiquidAssetsVND": 400000000,
+      "currentRealEstateAssets": "3 plots of land with wife (1 in Da Nang valued at ~2B VND)",
+      "healthStatus": "Excellent (Runner, Resting Heart Rate 48-52 bpm)"
+    },
+    "coreValuesAndIdentity": {
+      "title": "Who I Want To Be",
+      "identities": [
+        "A Runner",
+        "A Reader",
+        "A Player",
+        "An Engineer",
+        "An Explorer",
+        "Healthy",
+        "Motivator",
+        "Wealthy"
+      ],
+      "drivingPrinciple": "To go as far as I could."
+    },
+    "tenYearVision": {
+      "title": "The 14 Billion VND Master Plan",
+      "incomeTargetMonthlyVND": {
+        "minimum": 150000000,
+        "maximum": 300000000
+      },
+      "assetGoals": {
+        "investmentPortfolioVND": 5000000000,
+              "housesToBuild": 2,
+        "totalHouseConstructionCostVND": 7000000000,
+        "carPurchaseCostVND": 2000000000
+      },
+      "impactGoal": "To motivate others by retelling my story after achieving these goals."
+    },
+    "timeline": [
+      {
+        "phase": 1,
+        "years": "1-3",
+        "phaseName": "The Foundation Phase",
+        "focus": [
+          "Aggressive upskilling in management and leadership.",
+          "Become an indispensable specialist at work.",
+          "Maximize savings rate and automate investing."
+        ],
+        "milestones": {
+          "career": "Become the go-to expert on the team and express leadership ambitions to management.",
+          "finance": "Grow liquid investment portfolio well past the 1B VND mark.",
+          "personal": "Complete a half-marathon and establish a consistent reading habit (e.g., 2 books/month)."
+        }
+      },
+      {
+        "phase": 2,
+        "years": "4-6",
+        "phaseName": "The Acceleration Phase",
+        "focus": [
+          "Secure the Manager role, either internally or by switching companies.",
+          "Dramatically increase primary income (>100M VND/month).",
+          "Begin planning and financing the first major construction project."
+        ],
+        "milestones": {
+          "career": "Successfully transition into a management role, leading a team.",
+          "finance": "Break ground on the first new house.",
+          "personal": "Complete a full marathon (42.2km)."
+        }
+      },
+      {
+        "phase": 3,
+        "years": "7-10",
+        "phaseName": "The Compounding & Legacy Phase",
+        "focus": [
+          "Excel as a senior leader and explore secondary income (e.g., consulting).",
+          "Finalize all major asset acquisitions.",
+          "Leverage investment returns as a significant income source."
+        ],
+        "milestones": {
+          "career": "Achieve the target income range of 150M-300M VND/month.",
+          "finance": "Complete all asset goals: 2 new houses built, 2B VND car purchased, 5B VND in investment account.",
+          "personal": "Have a powerful, data-backed success story ready to share and inspire others."
+        }
+      }
+    ]
+  }
+}

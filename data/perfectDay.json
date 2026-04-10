@@ -1,0 +1,62 @@
+{
+  "perfectDay": {
+    "title": "The 1-8-15 Blueprint",
+    "schedule": [
+      {
+        "time": "6:00 AM - 6:30 AM",
+        "activity": "Wake & Prime",
+        "details": "Start the day with intention, not reaction. Hydrate with water, do light stretching, and plan your top 3 priorities. No phone."
+      },
+      {
+        "time": "6:30 AM - 8:30 AM",
+        "activity": "Exercise",
+        "details": "Build your 'Runner' identity and energize your body for the day. Ideal time in Bien Hoa to avoid the peak heat. This is your protected time."
+      },
+      {
+        "time": "8:30 AM - 9:00 AM",
+        "activity": "Refuel & Prepare",
+        "details": "Post-workout nutrition with a protein-rich breakfast. Shower and prepare your workspace to begin work exactly on time."
+      },
+      {
+        "time": "9:00 AM - 12:00 PM",
+        "activity": "Deep Work Block 1",
+        "details": "Tackle your most cognitively demanding tasks. Use Pomodoro (50 min work / 10 min break). No distractions allowed."
+      },
+      {
+        "time": "12:00 PM - 1:00 PM",
+        "activity": "Lunch & Recharge",
+        "details": "Refuel your body and give your brain a complete break. Eat away from your desk. A short walk is ideal."
+      },
+      {
+        "time": "1:00 PM - 4:00 PM",
+        "activity": "Deep Work Block 2",
+        "details": "Complete your 6-hour workday. Focus on collaborative or less demanding tasks. Shut down work completely at 4 PM."
+      },
+      {
+        "time": "4:00 PM - 6:00 PM",
+        "activity": "Hanging Around (Flexible Time)",
+        "details": "Decompress and handle life logistics. This is your buffer for errands, chores, family time, or a power nap."
+      },
+      {
+        "time": "6:00 PM - 8:00 PM",
+        "activity": "Learning",
+        "details": "Build your skills for career and personal growth. With work done, you can give this your full focus."
+      },
+      {
+        "time": "8:00 PM - 10:00 PM",
+        "activity": "Relax & Absorb",
+        "details": "Wind down with your interests. Watch financial world videos or other relaxing entertainment to transition from 'work' mode."
+      },
+      {
+        "time": "10:00 PM - 11:00 PM",
+        "activity": "Read & Disconnect",
+        "details": "Pre-sleep ritual to calm the mind. Must be a physical book to avoid blue light which disrupts sleep."
+      },
+      {
+        "time": "11:00 PM",
+        "activity": "Sleep",
+        "details": "The foundation of everything. Recovery and memory consolidation. Keep your room cool, dark, and quiet."
+      }
+    ]
+  }
+}

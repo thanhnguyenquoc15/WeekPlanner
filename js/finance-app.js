@@ -2,7 +2,10 @@
 // finance-app.js — Monk Mode Financial Dashboard
 // ============================================================
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaTLyNay_VIp1uKUtc7q5GmOHuSrVxzJmnqdVUgTCX4Rq1a4DZCFAduoE-EKnlHSHsmw/exec';
+// URL + token loaded from js/finance-config.js (gitignored — never hardcoded here)
+const _cfg            = window.FINANCE_CONFIG || {};
+const APPS_SCRIPT_URL = _cfg.appsScriptUrl || 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL';
+const API_TOKEN       = _cfg.token         || '';
 const DAILY_BUDGET    = 350_000;
 const DARK_KEY        = 'monk_dark_mode';
 
@@ -14,6 +17,18 @@ let _currentMonth = (() => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 })();
+
+// ── Security: HTML escape ─────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+}
+
+// ── Performance: debounce ─────────────────────────────────────────────
+function debounce(fn, ms) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
 
 // ── Utility ───────────────────────────────────────────────────────────
 function fmt(n) {
@@ -93,6 +108,7 @@ function api(action, params = {}) {
     url.searchParams.set('callback', cbName);
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
 
+    if (API_TOKEN) url.searchParams.set('token', API_TOKEN);
     script.src = url.toString();
     document.head.appendChild(script);
   });
@@ -135,38 +151,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadAll() {
   setStatus('loading');
+
+  // Load overview first — it drives the main cards and weekly chart
+  let overview;
   try {
-    const [overview, trend, networth] = await Promise.all([
-      api('overview', { month: _currentMonth, today: todayKey() }),
-      api('trend'),
-      api('networth'),
-    ]);
-
-    // Guard: Apps Script may return {error: '...'}
-    if (overview.error) {
-      showBanner(`Overview error: ${overview.error}`);
-    } else {
-      _lastOverview = overview;
-      renderSummaryCards(overview);
-      renderWeeklyChart(overview);
-      renderBudgetBreakdown(overview);
-      populateBucketDropdown(overview.buckets);
-    }
-
-    if (!trend.error) {
-      _lastTrend = trend;
-      renderTrendChart(trend);
-    }
-
-    if (!networth.error) {
-      renderNetWorth(networth);
-    }
-
-    setStatus('online');
+    overview = await api('overview', { month: _currentMonth, today: todayKey() });
   } catch (e) {
-    console.error('Finance load error:', e);
+    console.error('[finance] overview failed:', e);
     setStatus('offline');
+    showToast('Could not load data — check connection', 'error');
+    return;
   }
+
+  if (overview.error) {
+    console.warn('[finance] overview error:', overview.error);
+    showBanner(`Overview error: ${overview.error}`);
+    setStatus('offline');
+    return;
+  }
+
+  console.log('[finance] overview:', JSON.stringify(overview));
+  _lastOverview = overview;
+  renderSummaryCards(overview);
+  renderWeeklyChart(overview);
+  renderBudgetBreakdown(overview);
+  populateBucketDropdown(overview.buckets);
+  setStatus('online');
+
+  // Trend and net-worth are secondary — failures don't block the main view
+  api('trend').then(trend => {
+    if (!trend.error) { _lastTrend = trend; renderTrendChart(trend); }
+  }).catch(e => console.warn('[finance] trend failed:', e));
+
+  api('networth').then(nw => {
+    if (!nw.error) renderNetWorth(nw);
+  }).catch(e => console.warn('[finance] networth failed:', e));
 }
 
 // ── Month navigation ──────────────────────────────────────────────────
@@ -272,7 +291,7 @@ function renderWeeklyChart(data) {
   if (!data) return;
   const ctx = document.getElementById('weekly-chart');
   if (!ctx) return;
-  if (_charts.weekly) { _charts.weekly.destroy(); _charts.weekly = null; }
+  if (_charts.weekly) { try { _charts.weekly.destroy(); } catch (_) {} _charts.weekly = null; }
 
   const days   = data.days || [];
   const dark   = isDark();
@@ -339,8 +358,8 @@ function renderBudgetBreakdown(data) {
     return `
       <div class="mb-4 last:mb-0">
         <div class="flex justify-between items-baseline mb-1">
-          <span class="text-sm font-semibold">${b.name}</span>
-          <span class="text-xs text-gray-500 dark:text-gray-400">${fmt(b.spent)} / ${fmt(b.allocated)}</span>
+          <span class="text-sm font-semibold">${esc(b.name)}</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">${esc(fmt(b.spent))} / ${esc(fmt(b.allocated))}</span>
         </div>
         <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div class="${barC} h-full rounded-full transition-all duration-500" style="width:${pct}%"></div>
@@ -348,7 +367,7 @@ function renderBudgetBreakdown(data) {
         <div class="flex justify-between mt-0.5">
           <span class="text-xs text-gray-400">${pct}%</span>
           <span class="text-xs ${rem < 0 ? 'text-red-400' : 'text-gray-400'}">
-            ${rem < 0 ? '⚠ over ' + fmt(-rem) : fmt(rem) + ' left'}
+            ${rem < 0 ? '⚠ over ' + esc(fmt(-rem)) : esc(fmt(rem)) + ' left'}
           </span>
         </div>
       </div>`;
@@ -360,7 +379,7 @@ function renderTrendChart(data) {
   if (!data) return;
   const ctx = document.getElementById('trend-chart');
   if (!ctx) return;
-  if (_charts.trend) { _charts.trend.destroy(); _charts.trend = null; }
+  if (_charts.trend) { try { _charts.trend.destroy(); } catch (_) {} _charts.trend = null; }
 
   const dark   = isDark();
   const months = data.months || [];
@@ -416,27 +435,27 @@ function renderNetWorth(data) {
 
   const assetRows = (data.assets || []).map(a =>
     `<tr class="border-b border-gray-100 dark:border-gray-800">
-      <td class="py-2 text-sm">${a.name}</td>
-      <td class="py-2 text-xs text-gray-400">${a.type}</td>
-      <td class="py-2 text-sm font-semibold text-right text-green-500">${fmt(a.value)}</td>
+      <td class="py-2 text-sm">${esc(a.name)}</td>
+      <td class="py-2 text-xs text-gray-400">${esc(a.type)}</td>
+      <td class="py-2 text-sm font-semibold text-right text-green-500">${esc(fmt(a.value))}</td>
     </tr>`).join('');
 
   const liabRows = (data.liabilities || []).map(l => {
     const extra = l.payment_type === 'amortizing'
-      ? `${fmt(l.fixed_monthly)}/mo · ${l.months_remaining}mo left`
-      : `${fmt(l.monthly_interest)}/mo interest`;
+      ? `${esc(fmt(l.fixed_monthly))}/mo · ${esc(String(l.months_remaining))}mo left`
+      : `${esc(fmt(l.monthly_interest))}/mo interest`;
     return `<tr class="border-b border-gray-100 dark:border-gray-800">
-      <td class="py-2 text-sm">${l.name}</td>
-      <td class="py-2 text-xs text-gray-400">${l.annual_rate}%/yr · ${extra}</td>
-      <td class="py-2 text-sm font-semibold text-right text-red-500">${fmt(l.balance)}</td>
+      <td class="py-2 text-sm">${esc(l.name)}</td>
+      <td class="py-2 text-xs text-gray-400">${esc(String(l.annual_rate))}%/yr · ${extra}</td>
+      <td class="py-2 text-sm font-semibold text-right text-red-500">${esc(fmt(l.balance))}</td>
     </tr>`;
   }).join('');
 
   const loanRows = (data.loans_given || []).map(l =>
     `<tr class="border-b border-gray-100 dark:border-gray-800">
-      <td class="py-2 text-sm">${l.borrower}</td>
-      <td class="py-2 text-xs text-gray-400">${l.annual_rate}%/yr · ${fmt(l.monthly_interest)}/mo due</td>
-      <td class="py-2 text-sm font-semibold text-right text-blue-500">${fmt(l.balance)}</td>
+      <td class="py-2 text-sm">${esc(l.borrower)}</td>
+      <td class="py-2 text-xs text-gray-400">${esc(String(l.annual_rate))}%/yr · ${esc(fmt(l.monthly_interest))}/mo due</td>
+      <td class="py-2 text-sm font-semibold text-right text-blue-500">${esc(fmt(l.balance))}</td>
     </tr>`).join('');
 
   el.innerHTML = `
@@ -458,7 +477,15 @@ function renderNetWorth(data) {
         <div class="text-xl font-black ${nw >= 0 ? 'text-purple-brand' : 'text-red-500'}">${fmt(nw)}</div>
       </div>
     </div>
-    ${assetRows ? `<div class="mb-5"><p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Assets</p><table class="w-full"><tbody>${assetRows}</tbody></table></div>` : ''}
+    ${assetRows ? `
+    <div class="mb-5">
+      <button onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('i').classList.toggle('rotate-180')"
+        class="flex items-center justify-between w-full mb-2 group">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Assets</p>
+        <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i>
+      </button>
+      <div class="hidden"><table class="w-full"><tbody>${assetRows}</tbody></table></div>
+    </div>` : ''}
     ${liabRows  ? `<div class="mb-5"><p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Liabilities</p><table class="w-full"><tbody>${liabRows}</tbody></table></div>` : ''}
     ${loanRows  ? `<div><p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Loans Given</p><table class="w-full"><tbody>${loanRows}</tbody></table></div>` : ''}
   `;
@@ -469,11 +496,13 @@ function renderDCASection() {
   const slider = document.getElementById('dca-monthly');
   const input  = document.getElementById('dca-monthly-input');
 
-  // Slider → text input
+  const debouncedChart = debounce(updateDCAChart, 80);
+
+  // Slider → text input (update label immediately, debounce chart redraw)
   slider?.addEventListener('input', () => {
     const vnd = parseInt(slider.value) * 1_000;
     if (input) input.value = fmt(vnd).replace('đ', '');
-    updateDCAChart();
+    debouncedChart();
   });
 
   // Text input → slider on blur or Enter
@@ -490,7 +519,7 @@ function renderDCASection() {
   input?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); syncInputToSlider(); } });
 
   ['dca-rate', 'dca-years'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', () => updateDCAChart());
+    document.getElementById(id)?.addEventListener('input', debouncedChart);
   });
 
   updateDCAChart();
@@ -534,7 +563,7 @@ function updateDCAChart() {
 
   const ctx = document.getElementById('dca-chart');
   if (!ctx) return;
-  if (_charts.dca) { _charts.dca.destroy(); _charts.dca = null; }
+  if (_charts.dca) { try { _charts.dca.destroy(); } catch (_) {} _charts.dca = null; }
 
   const dark   = isDark();
   const purple = dark ? '#a78bfa' : '#7542A8';

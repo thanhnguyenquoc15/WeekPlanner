@@ -131,18 +131,98 @@ body {
   min-height: 1.5rem;
 }
 
+/* ── Run history layout ──────────────────────────────────────────── */
+.run-layout {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+/* Left: stacked monthly calendars, scrolls internally */
+.run-cal-side {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+/* Right: detail panel — stretches to match cal-side height via flexbox */
+.run-detail-side {
+  flex: 1;
+  background: rgba(31,41,55,0.7);
+  border: 1px solid rgba(75,85,99,0.25);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+.run-detail-empty { display: flex; flex-direction: column; align-items: center; }
+/* Mini month */
+.run-mini-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+.run-mini-dow, .run-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.run-mini-dow span {
+  font-size: 0.55rem;
+  text-align: center;
+  color: #4b5563;
+  font-weight: 700;
+}
+.run-mini-cell {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: #374151;
+}
+.run-mini-rest { background: rgba(75,85,99,0.12); }
+.run-mini-run  { cursor: pointer; transition: transform 0.1s; }
+.run-mini-run:hover  { transform: scale(1.15); }
+.run-mini-run.active { outline: 2px solid #a78bfa; outline-offset: 2px; }
+.run-mini-low  { background: rgba(139,92,246,0.35); }
+.run-mini-mid  { background: rgba(139,92,246,0.65); }
+.run-mini-high { background: rgba(139,92,246,1); box-shadow: 0 0 6px rgba(139,92,246,0.5); }
+
 /* ── Running activity cards ──────────────────────────────────────── */
 .run-card {
   background: rgba(31,41,55,0.7);
   border: 1px solid rgba(75,85,99,0.3);
   border-radius: 0.75rem;
-  padding: 1rem;
+  padding: 1.25rem 1rem 1rem;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
+  gap: 0.2rem;
   backdrop-filter: blur(8px);
+  position: relative;
 }
 .dark .run-card { background: rgba(31,41,55,0.9); }
+.run-card-delete {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  color: #4b5563;
+  transition: color 0.15s;
+  padding: 0.25rem;
+  line-height: 1;
+}
+.run-card-delete:hover { color: #f87171; }
 
 /* ── Habits list rows ────────────────────────────────────────────── */
 .habit-row {
@@ -426,6 +506,320 @@ body {
 .recipe-check:checked + span {
   text-decoration: line-through;
   color: #9ca3af;
+}
+
+/* ── Identity pills ──────────────────────────────────────────────── */
+/* ── Today: grinding clip window ────────────────────────────────── */
+.grinding-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0a0a0f;
+  border-radius: 1rem 1rem 0 0;
+  overflow: hidden;
+}
+.grinding-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ── Reward popup ────────────────────────────────────────────────── */
+.reward-popup {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(380px, calc(100vw - 2rem));
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  z-index: 9999;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99,102,241,0.1);
+  transition: top 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.reward-popup.reward-show {
+  top: 1rem;
+  pointer-events: auto;
+}
+.reward-icon-wrap {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.1rem;
+}
+
+/* ── Today inline schedule: row + collapsed state ────────────────── */
+.today-sched-row {
+  padding: 0.875rem;
+  transition: padding 0.2s ease, opacity 0.2s ease;
+}
+
+/* Collapsed / done: flex-row so note sits beside the title */
+.sched-collapsed {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  opacity: 0.5;
+  padding: 0.45rem 0.875rem;
+}
+.sched-collapsed .today-sched-meta,
+.sched-collapsed .today-sched-details { display: none; }
+
+/* Label takes remaining space */
+.sched-collapsed > label { flex: 1; min-width: 0; }
+
+/* Note shrinks to a compact side slot */
+.sched-collapsed > .today-note-input {
+  flex: 0 0 36%;
+  min-width: 60px;
+  max-width: 160px;
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+  height: 1.25rem;
+  overflow: hidden;
+}
+
+/* ── Today: Burning rope timeline ───────────────────────────────── */
+.today-rope-col {
+  position: relative;
+  flex-shrink: 0;
+  width: 1.125rem;
+}
+.today-rope-track {
+  position: absolute;
+  left: 50%;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  transform: translateX(-50%);
+  background: rgba(200, 180, 140, 0.1);
+  border-radius: 9999px;
+  overflow: visible;
+}
+.today-rope-burned {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 0%;
+  background: linear-gradient(to bottom, #111827, #374151);
+  border-radius: 9999px 9999px 0 0;
+  transition: height 1s ease;
+}
+.today-rope-flame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80%);
+  width: 10px;
+  height: 18px;
+  pointer-events: none;
+  display: none;
+}
+.today-rope-flame::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 7px; height: 13px;
+  background: linear-gradient(to top, #f97316, #fbbf24 55%, transparent);
+  border-radius: 50% 50% 35% 35%;
+  animation: rope-flicker 0.45s ease-in-out infinite alternate;
+  filter: blur(0.5px);
+}
+.today-rope-flame::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 50%;
+  transform: translateX(-50%);
+  width: 5px; height: 5px;
+  background: #fbbf24;
+  border-radius: 50%;
+  box-shadow: 0 0 7px 4px rgba(249, 115, 22, 0.5);
+}
+@keyframes rope-flicker {
+  from { transform: translateX(-50%) scaleX(1)    scaleY(1);    opacity: 1; }
+  to   { transform: translateX(-55%) scaleX(0.78) scaleY(1.28); opacity: 0.82; }
+}
+
+/* ── Today: Locked activity (time not yet reached) ───────────────── */
+.today-sched-locked { opacity: 0.38; }
+.today-sched-locked .today-sched-check { pointer-events: none; }
+.today-sched-lock-icon {
+  display: none;
+  font-size: 0.5rem;
+  color: #6b7280;
+  margin-left: 0.1rem;
+}
+.today-sched-locked .today-sched-lock-icon { display: inline; }
+
+/* ── Today inline schedule: note textarea ────────────────────────── */
+.today-note-input {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  color: #6b7280;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.today-note-input::placeholder { color: #374151; }
+.today-note-input:focus { color: #d1d5db; }
+
+/* ── Drawer activity pillar icon (inline badge next to activity name) */
+.activity-pillar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.35rem;
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* ── Identity pills ──────────────────────────────────────────────── */
+.identity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.38rem;
+  border-radius: 0.3rem;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+.identity-pill i { font-size: 0.55rem; }
+
+/* ── Blueprint: Identity cards ───────────────────────────────────── */
+.blueprint-identity-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #f3f4f6;
+  background: #f9fafb;
+  text-align: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.dark .blueprint-identity-card {
+  background: rgba(31,41,55,0.6);
+  border-color: #374151;
+}
+.blueprint-identity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+
+.blueprint-identity-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin: 0 auto;
+}
+
+/* ── Blueprint: Vision stat cards ────────────────────────────────── */
+.blueprint-stat-card {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  text-align: center;
+}
+.dark .blueprint-stat-card {
+  background: rgba(31,41,55,0.6);
+  border-color: #374151;
+}
+
+/* ── Blueprint: Phase timeline cards ─────────────────────────────── */
+.blueprint-phase-card {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+.dark .blueprint-phase-card {
+  background: rgba(31,41,55,0.5);
+  border-color: #374151;
+}
+.blueprint-phase-current {
+  border-color: #7c3aed;
+  background: #faf5ff;
+  box-shadow: 0 0 0 1.5px #7c3aed;
+}
+.dark .blueprint-phase-current {
+  background: rgba(109,40,217,0.1);
+  border-color: #7c3aed;
+}
+.blueprint-phase-future { opacity: 0.6; }
+
+.blueprint-phase-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #d1d5db;
+}
+.blueprint-phase-dot.blueprint-phase-current { background: #7c3aed; }
+.blueprint-phase-dot.blueprint-phase-past    { background: #22c55e; }
+
+/* ── Blueprint: Perfect day list ─────────────────────────────────── */
+.blueprint-perfect-day-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+.dark .blueprint-perfect-day-item { border-color: #374151; }
+.blueprint-perfect-day-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.blueprint-perfect-day-time {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #7542A8;
+  white-space: nowrap;
+  width: 9rem;
+  flex-shrink: 0;
+  padding-top: 0.15rem;
+  font-variant-numeric: tabular-nums;
+}
+.dark .blueprint-perfect-day-time { color: #a78bfa; }
+
+/* ── Running tab: GPX drag-and-drop ─────────────────────────────── */
+.gpx-drop-active {
+  outline: 2px dashed #f97316;
+  outline-offset: -4px;
+  border-radius: 1rem;
+  background: rgba(249, 115, 22, 0.04);
 }
 
 /* ── Training plan week cards ────────────────────────────────────── */

@@ -128,19 +128,29 @@ const FALLBACK_RAW = {
         "Chủ Nhật": { fitness: "Rest & Reset",                              sre: "Meal Prep & Planning",             nutrition: "Thư giãn, ăn uống đầy đủ." },
     },
     weekly_tasks: [
-        { id: 1, day: "Thứ 2",    task: "SRE Recovery: Read 1 Ch. SRE Book" },
-        { id: 2, day: "Thứ 3",    task: "Run 6km Zone 2 + Terraform" },
-        { id: 3, day: "Thứ 4",    task: "Run 5km Easy + K8s Basics" },
-        { id: 4, day: "Thứ 5",    task: "Interval Run (4x800m)" },
-        { id: 5, day: "Thứ 6",    task: "Rest & Strength Training" },
-        { id: 6, day: "Thứ 7",    task: "Long Run 10km (Zone 2)" },
-        { id: 7, day: "Chủ Nhật", task: "Rest & Meal Prep" },
+        { id: 1, day: "Thứ 2",    task: "SRE Recovery: Read 1 Ch. SRE Book", identity: "Reader"  },
+        { id: 2, day: "Thứ 3",    task: "Run 6km Zone 2 + Terraform",         identity: "Runner"  },
+        { id: 3, day: "Thứ 4",    task: "Run 5km Easy + K8s Basics",          identity: "Runner"  },
+        { id: 4, day: "Thứ 5",    task: "Interval Run (4x800m)",              identity: "Runner"  },
+        { id: 5, day: "Thứ 6",    task: "Rest & Strength Training",           identity: "Healthy" },
+        { id: 6, day: "Thứ 7",    task: "Long Run 10km (Zone 2)",             identity: "Runner"  },
+        { id: 7, day: "Chủ Nhật", task: "Rest & Meal Prep",                  identity: "Healthy" },
     ],
     daily_habits: [
-        { id: 101, name: "Dậy lúc 7:00 AM" },
-        { id: 102, name: "Nạp đủ 130g Protein" },
-        { id: 103, name: "Học SRE ít nhất 1h" },
+        { id: 101, name: "Dậy lúc 5:30",       identity: "Healthy"  },
+        { id: 102, name: "Nạp đủ 130g Protein", identity: "Healthy"  },
+        { id: 103, name: "Học SRE ít nhất 1h",  identity: "Engineer" },
     ],
+    goal_context: {
+        phase: 1,
+        phase_name: "The Foundation",
+        weekly_focus: "Build the base. Run. Read. Upskill daily.",
+        milestones: [
+            { key: "half_marathon",  label: "Half Marathon",      unit: "km",    target: 21.1        },
+            { key: "portfolio_989m", label: "Portfolio 989M VND", unit: "vnd",   target: 989377877   },
+            { key: "books",          label: "2 Books / Month",    unit: "books", target: 2           },
+        ],
+    },
 };
 
 // ── YAML → app-shape transformer ──────────────────────────────────
@@ -161,8 +171,9 @@ function parseRaw(raw) {
         weekLabel:       raw.week_label ?? '',
         scheduleData,
         detailedPlan:    raw.today_plan ?? {},
-        defaultCalendar: (raw.weekly_tasks  ?? []).map(t => ({ ...t, completed: false })),
-        defaultHabits:   (raw.daily_habits  ?? []).map(h => ({ ...h, completed: false })),
+        defaultCalendar: (raw.weekly_tasks ?? []).map(t => ({ ...t, completed: false })),
+        defaultHabits:   (raw.daily_habits ?? []).map(h => ({ ...h, completed: false })),
+        goalContext:     raw.goal_context  ?? null,
     };
 }
 
@@ -185,6 +196,34 @@ export async function loadWeekData() {
     } catch (e) {
         console.warn('[data] Could not load week.yml — using built-in defaults.', e.message);
         return FALLBACK_WEEK_DATA;
+    }
+}
+
+/**
+ * Loads data/goals.json (life blueprint). Returns null on failure.
+ */
+export async function loadGoalsData() {
+    try {
+        const res = await fetch('./data/goals.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.warn('[data] Could not load goals.json', e.message);
+        return null;
+    }
+}
+
+/**
+ * Loads data/perfectDay.json. Returns null on failure.
+ */
+export async function loadPerfectDay() {
+    try {
+        const res = await fetch('./data/perfectDay.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+    } catch (e) {
+        console.warn('[data] Could not load perfectDay.json', e.message);
+        return null;
     }
 }
 

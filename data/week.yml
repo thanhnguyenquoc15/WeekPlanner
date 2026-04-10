@@ -170,18 +170,30 @@ today_plan:
 # ── Weekly Habits Drawer Checklist ────────────────────────────────────────────
 # One task per day — shown in the Weekly Progress & Core Habits drawer
 # IDs must be unique integers and stable across weeks (completion stored by id)
+# identity: links this task to a life identity pillar (Runner/Reader/Engineer/Healthy/Wealthy/Explorer/Player/Motivator)
 weekly_tasks:
-  - { id: 1, day: "Thứ 2",    task: "SRE Recovery: Read 1 Ch. SRE Book" }
-  - { id: 2, day: "Thứ 3",    task: "Run 6km Zone 2 + Terraform" }
-  - { id: 3, day: "Thứ 4",    task: "Run 5km Easy + K8s Basics" }
-  - { id: 4, day: "Thứ 5",    task: "Interval Run (4x800m)" }
-  - { id: 5, day: "Thứ 6",    task: "Rest & Strength Training" }
-  - { id: 6, day: "Thứ 7",    task: "Long Run 10km (Zone 2)" }
-  - { id: 7, day: "Chủ Nhật", task: "Rest & Meal Prep" }
+  - { id: 1, day: "Thứ 2",    task: "SRE Recovery: Read 1 Ch. SRE Book", identity: "Reader" }
+  - { id: 2, day: "Thứ 3",    task: "Run 6km Zone 2 + Terraform",         identity: "Runner" }
+  - { id: 3, day: "Thứ 4",    task: "Run 5km Easy + K8s Basics",          identity: "Runner" }
+  - { id: 4, day: "Thứ 5",    task: "Interval Run (4x800m)",              identity: "Runner" }
+  - { id: 5, day: "Thứ 6",    task: "Rest & Strength Training",           identity: "Healthy" }
+  - { id: 6, day: "Thứ 7",    task: "Long Run 10km (Zone 2)",             identity: "Runner" }
+  - { id: 7, day: "Chủ Nhật", task: "Rest & Meal Prep",                  identity: "Healthy" }
 
 # ── Core Daily Habits ─────────────────────────────────────────────────────────
 # These appear every day. IDs must be stable — they are referenced in the Today tab buttons.
 daily_habits:
-  - { id: 101, name: "Dậy lúc 5:30" }
-  - { id: 102, name: "Nạp đủ 130g Protein" }
-  - { id: 103, name: "Học SRE ít nhất 1h" }
+  - { id: 101, name: "Dậy lúc 5:30",        identity: "Healthy" }
+  - { id: 102, name: "Nạp đủ 130g Protein",  identity: "Healthy" }
+  - { id: 103, name: "Học SRE ít nhất 1h",   identity: "Engineer" }
+
+# ── Goal Context ───────────────────────────────────────────────────────────────
+# Links this week to your life blueprint (mygoals.json)
+goal_context:
+  phase: 1
+  phase_name: "The Foundation"
+  weekly_focus: "Build the base. Run. Read. Upskill daily."
+  milestones:
+    - { key: "half_marathon",  label: "Half Marathon",      unit: "km",    target: 21.1 }
+    - { key: "portfolio_989m", label: "Portfolio 989M VND", unit: "vnd",   target: 989377877 }
+    - { key: "books",          label: "2 Books / Month",    unit: "books", target: 2 }
