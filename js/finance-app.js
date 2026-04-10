@@ -114,19 +114,36 @@ function api(action, params = {}) {
   });
 }
 
-// ── Dark mode ─────────────────────────────────────────────────────────
-function initDarkMode() {
-  const saved = localStorage.getItem(DARK_KEY);
-  if (saved === 'true' || saved === null) {
-    document.documentElement.classList.add('dark');
-  }
+// ── Theme system (kept in sync with ui.js via shared localStorage key) ──
+const THEMES = [
+  { name: 'dark',     icon: 'fa-moon',    dark: true  },
+  { name: 'midnight', icon: 'fa-star',    dark: true  },
+  { name: 'mocha',    icon: 'fa-mug-hot', dark: true  },
+  { name: 'light',    icon: 'fa-sun',     dark: false },
+];
+
+function _applyTheme(name) {
+  const theme = THEMES.find(t => t.name === name) || THEMES[0];
+  document.documentElement.dataset.theme = theme.name;
+  document.documentElement.classList.toggle('dark', theme.dark);
   const icon = document.getElementById('dark-mode-icon');
-  if (icon) icon.className = isDark() ? 'fas fa-sun text-sm w-4 text-center' : 'fas fa-moon text-sm w-4 text-center';
+  if (icon) icon.className = `fas ${theme.icon} text-sm w-4 text-center`;
+}
+
+function initDarkMode() {
+  // Support both old boolean values ('true'/'false') and new theme names
+  const raw   = localStorage.getItem(DARK_KEY);
+  const saved = (raw === 'true' || raw === null) ? 'dark'
+              : (raw === 'false')                ? 'light'
+              : raw;
+  _applyTheme(saved);
 
   document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
-    const on = document.documentElement.classList.toggle('dark');
-    localStorage.setItem(DARK_KEY, String(on));
-    if (icon) icon.className = on ? 'fas fa-sun text-sm w-4 text-center' : 'fas fa-moon text-sm w-4 text-center';
+    const current = document.documentElement.dataset.theme || 'dark';
+    const idx     = THEMES.findIndex(t => t.name === current);
+    const next    = THEMES[(idx + 1) % THEMES.length];
+    _applyTheme(next.name);
+    localStorage.setItem(DARK_KEY, next.name);
     if (_lastOverview) renderWeeklyChart(_lastOverview);
     if (_lastTrend)    renderTrendChart(_lastTrend);
     updateDCAChart();

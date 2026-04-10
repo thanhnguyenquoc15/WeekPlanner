@@ -24,12 +24,11 @@ function doGet(e) {
   const p      = e.parameter || {};
   const action = (p.action || 'overview').toLowerCase();
   const rawCb  = p.callback || '';
-  // Validate callback: only allow safe JS identifier characters
-  const cb = /^[A-Za-z_$][A-Za-z0-9_$.]*$/.test(rawCb) ? rawCb : '';
+  // Validate callback: strict alphanumeric + underscore, no $ or dots
+  const cb = /^[A-Za-z_][A-Za-z0-9_]{0,64}$/.test(rawCb) ? rawCb : '';
 
   // ── Token auth ────────────────────────────────────────────────────
-  // 'debug' is exempted so it can be called from the Apps Script editor
-  if (action !== 'debug' && p.token !== VALID_TOKEN) {
+  if (p.token !== VALID_TOKEN) {
     const deny = JSON.stringify({ error: 'Unauthorized' });
     if (cb) return ContentService.createTextOutput(cb + '(' + deny + ')')
                    .setMimeType(ContentService.MimeType.JAVASCRIPT);

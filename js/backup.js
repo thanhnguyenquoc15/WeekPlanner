@@ -21,6 +21,8 @@ const BACKUP_KEYS = [
     'lumi_runs',
 ];
 
+const VALID_DAYS = new Set(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
+
 function collectAllData() {
     const data = { _version: 1, _exported: new Date().toISOString() };
 
@@ -81,6 +83,7 @@ export function importAllData(file) {
             });
             if (data._progress && typeof data._progress === 'object') {
                 Object.entries(data._progress).forEach(([day, val]) => {
+                    if (!VALID_DAYS.has(day)) return; // reject unknown day keys
                     localStorage.setItem(`progress_${day}`, JSON.stringify(val));
                 });
             }

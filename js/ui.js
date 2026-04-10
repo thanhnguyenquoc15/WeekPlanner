@@ -115,7 +115,7 @@ function updateTimelineRope(container, scheduleTimes) {
 
     // 1. Update lock / unlock state on every checkbox
     container.querySelectorAll('.today-sched-check').forEach(cb => {
-        const actTime = scheduleTimes[parseInt(cb.dataset.idx)];
+        const actTime = scheduleTimes[parseInt(cb.dataset.idx, 10)];
         if (actTime === null) return;
         const locked = now < actTime && !cb.checked;
         cb.disabled = locked;
@@ -250,7 +250,7 @@ export function renderTodayScheduleInline() {
             // Compute new state and sync everywhere
             const day        = e.target.dataset.day;
             const allChecked = [...container.querySelectorAll('.today-sched-check')]
-                .filter(c => c.checked).map(c => parseInt(c.dataset.idx));
+                .filter(c => c.checked).map(c => parseInt(c.dataset.idx, 10));
             const total = container.querySelectorAll('.today-sched-check').length;
             applyProgress(day, allChecked);
             if (done) {
@@ -266,7 +266,7 @@ export function renderTodayScheduleInline() {
             e.target.style.height = 'auto';
             e.target.style.height = e.target.scrollHeight + 'px';
         });
-        ta.addEventListener('blur', e => saveNote(parseInt(e.target.dataset.idx), e.target.value));
+        ta.addEventListener('blur', e => saveNote(parseInt(e.target.dataset.idx, 10), e.target.value));
     });
 
     // Workout links
@@ -535,7 +535,7 @@ function applyProgress(day, checkedIndices) {
         if (total && scheduleProgressBar) {
             scheduleProgressBar.style.width = `${(checkedIndices.length / total) * 100}%`;
         }
-        all.forEach(cb => { cb.checked = checkedIndices.includes(parseInt(cb.dataset.index)); });
+        all.forEach(cb => { cb.checked = checkedIndices.includes(parseInt(cb.dataset.index, 10)); });
     }
 
     // Refresh week dashboard
@@ -544,7 +544,7 @@ function applyProgress(day, checkedIndices) {
     // Sync inline view (Today tab)
     document.getElementById('today-schedule-inline')
         ?.querySelectorAll('.today-sched-check').forEach(cb => {
-            const idx  = parseInt(cb.dataset.idx);
+            const idx  = parseInt(cb.dataset.idx, 10);
             const done = checkedIndices.includes(idx);
             if (cb.checked === done) return; // already correct, skip DOM write
             cb.checked = done;
@@ -677,7 +677,7 @@ export function initUI(scheduleData = {}) {
         if (!e.target.classList.contains('activity-checkbox')) return;
         const day  = scheduleModal.dataset.day;
         const all  = [...(scheduleModalBody?.querySelectorAll('.activity-checkbox') ?? [])];
-        const checkedIndices = all.filter(c => c.checked).map(c => parseInt(c.dataset.index));
+        const checkedIndices = all.filter(c => c.checked).map(c => parseInt(c.dataset.index, 10));
         applyProgress(day, checkedIndices);
         if (e.target.checked) {
             showQuote();

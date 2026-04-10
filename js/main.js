@@ -8,7 +8,7 @@ import { loadWeekData, loadGoalsData, loadPerfectDay, seedRunsIfEmpty } from './
 import { Storage }                                     from './storage.js';
 import { STORAGE_KEYS }                                from './config.js';
 import { initBackup }                                  from './backup.js';
-import { pullRuns, pullHabits }                        from './sync.js';
+import { pullRuns, pullHabits, saveSyncConfig, syncEnabled, syncUrl } from './sync.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply theme immediately to avoid flash
@@ -17,18 +17,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const runStorage = new Storage(STORAGE_KEYS.runs);
 
-    // Fetch all data sources in parallel — week.yml is critical, rest are non-critical
-    const [weekData, goalsData, perfectDayData] = await Promise.all([
+    // week.yml is critical; goals + perfectDay are optional (blueprint tab only)
+    const [weekResult, goalsResult, perfectDayResult] = await Promise.allSettled([
         loadWeekData(),
         loadGoalsData(),
         loadPerfectDay(),
     ]);
+    if (weekResult.status === 'rejected') {
+        console.error('[main] failed to load week data:', weekResult.reason);
+    }
+    const weekData      = weekResult.value      ?? { scheduleData: [], goalContext: null };
+    const goalsData     = goalsResult.value      ?? null;
+    const perfectDayData = perfectDayResult.value ?? null;
     seedRunsIfEmpty(runStorage).catch(e => console.warn('[main] seed runs failed:', e));
 
-    // Pull cloud data first (non-blocking — app renders from localStorage immediately,
-    // then re-renders once cloud data arrives)
-    pullRuns(runStorage).then(runs => { if (runs) initHabits(weekData); });
+    // Pull cloud data non-blocking — app renders from localStorage immediately,
+    // then re-renders habits once cloud runs arrive (null = offline/error, [] = no runs)
+    pullRuns(runStorage).then(runs => { if (runs !== null) initHabits(weekData); });
     pullHabits();
+
+    // ── Cloud sync setup UI ─────────────────────────────────────────
+    const statusLabel = document.getElementById('sync-status-label');
+    if (statusLabel) {
+        statusLabel.textContent = syncEnabled ? 'Sync active ✓' : 'Not configured';
+        statusLabel.style.color  = syncEnabled ? '#22c55e' : '';
+    }
+    // Pre-fill URL if already configured (so user can see/update it)
+    const syncUrlInput = document.getElementById('sync-url-input');
+    if (syncUrlInput && syncUrl) syncUrlInput.value = syncUrl;
+
+    const syncSaveBtn = document.getElementById('sync-save-btn');
+    if (syncSaveBtn) {
+        syncSaveBtn.addEventListener('click', () => {
+            const url   = document.getElementById('sync-url-input').value.trim();
+            const token = document.getElementById('sync-token-input').value.trim();
+            if (!url || !token) { alert('Please enter both URL and token.'); return; }
+            saveSyncConfig(url, token);
+        });
+    }
 
     initBackup();
     initUI(weekData.scheduleData);

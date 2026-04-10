@@ -6,12 +6,29 @@
  * Offline / no config: silently falls back to localStorage only.
  */
 
-const _cfg      = window.APP_CONFIG || window.FINANCE_CONFIG || {};
-const _BASE_URL = _cfg.appsScriptUrl || '';
+// Config priority: finance-config.js (laptop) → localStorage (phone/other devices)
+function _loadCfg() {
+    const win = window.APP_CONFIG || window.FINANCE_CONFIG || {};
+    if (win.appsScriptUrl && !win.appsScriptUrl.includes('YOUR_APPS_SCRIPT')) return win;
+    try {
+        const saved = localStorage.getItem('app_sync_config');
+        if (saved) return JSON.parse(saved);
+    } catch {}
+    return {};
+}
+
+const _cfg      = _loadCfg();
+// Only allow HTTPS endpoints — reject accidental http or placeholder values
+const _BASE_URL = (_cfg.appsScriptUrl || '').startsWith('https://') ? _cfg.appsScriptUrl : '';
 const _TOKEN    = _cfg.token || '';
 
-let _syncEnabled = !!(  _BASE_URL && _TOKEN
-                     && !_BASE_URL.includes('YOUR_APPS_SCRIPT'));
+let _syncEnabled = !!(_BASE_URL && _TOKEN);
+
+export function saveSyncConfig(appsScriptUrl, token) {
+    localStorage.setItem('app_sync_config', JSON.stringify({ appsScriptUrl, token }));
+    // Reload so the new config takes effect
+    location.reload();
+}
 
 // ── JSONP transport (same pattern as finance-app.js) ──────────────────
 function cloudCall(params) {
@@ -113,4 +130,4 @@ export function pushHabit(date, checkedIndices) {
     }).catch(e => console.warn('[sync] pushHabit failed:', e.message));
 }
 
-export { _syncEnabled as syncEnabled };
+export { _syncEnabled as syncEnabled, _BASE_URL as syncUrl };

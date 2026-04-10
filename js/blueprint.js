@@ -14,6 +14,12 @@
 import { IDENTITY_META }                       from './config.js';
 import { identityPillHtml, activityPillarIconHtml } from './identity.js';
 
+const _escEl = document.createElement('div');
+function esc(str) {
+    _escEl.textContent = String(str ?? '');
+    return _escEl.innerHTML;
+}
+
 // ── Identity taglines (personal, not in config) ────────────────────
 const IDENTITY_TAGLINES = {
     Runner:    'Log the miles. Earn the marathon.',
@@ -61,7 +67,7 @@ function renderIdentityWall(container, blueprint) {
                 </div>
             </div>
             <p class="text-sm italic text-gray-500 dark:text-gray-400 border-l-2 border-purple-400 pl-3 mb-6">
-                "${principle}"
+                "${esc(principle)}"
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 ${cardsHtml}
@@ -93,9 +99,9 @@ function renderVisionStats(container, blueprint) {
     container.innerHTML = `
         <div class="planner-card">
             <h2 class="text-base font-black uppercase tracking-wider text-purple-brand mb-1">
-                <i class="fas fa-trophy mr-2"></i>${vision.title}
+                <i class="fas fa-trophy mr-2"></i>${esc(vision.title)}
             </h2>
-            <p class="text-xs text-gray-400 mb-5">${vision.impactGoal}</p>
+            <p class="text-xs text-gray-400 mb-5">${esc(vision.impactGoal)}</p>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">${statsHtml}</div>
         </div>`;
 }
@@ -113,11 +119,11 @@ function renderTimeline(container, blueprint, currentPhase = 1) {
                          :             'blueprint-phase-future';
         const milestones = Object.entries(p.milestones ?? {}).map(([k, v]) =>
             `<li class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span class="font-bold capitalize text-gray-600 dark:text-gray-300">${k}:</span> ${v}
+                <span class="font-bold capitalize text-gray-600 dark:text-gray-300">${esc(k)}:</span> ${esc(v)}
              </li>`
         ).join('');
         const focusHtml = (p.focus ?? []).map(f =>
-            `<li class="text-xs text-gray-500 dark:text-gray-400">${f}</li>`
+            `<li class="text-xs text-gray-500 dark:text-gray-400">${esc(f)}</li>`
         ).join('');
 
         return `
@@ -129,7 +135,7 @@ function renderTimeline(container, blueprint, currentPhase = 1) {
                     </span>
                     ${isCurrent ? '<span class="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold">NOW</span>' : ''}
                 </div>
-                <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 mb-3">${p.phaseName}</h3>
+                <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100 mb-3">${esc(p.phaseName)}</h3>
                 <ul class="space-y-1 list-disc list-inside mb-3">${focusHtml}</ul>
                 <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
                     <p class="text-xs font-bold uppercase text-gray-400 mb-1">Milestones</p>
@@ -159,9 +165,9 @@ function renderPerfectDay(container, perfectDayJson) {
                 <div class="blueprint-perfect-day-time">${item.time}</div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-                        ${item.activity}${pillar}
+                        ${esc(item.activity)}${pillar}
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">${item.details}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">${esc(item.details)}</p>
                 </div>
             </li>`;
     }).join('');

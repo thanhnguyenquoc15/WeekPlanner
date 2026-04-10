@@ -120,7 +120,7 @@ export function renderGoalContext() {
     // Wire up editable milestone buttons
     el.querySelectorAll('[data-milestone-idx]').forEach(btn => {
         btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.milestoneIdx);
+            const idx = parseInt(btn.dataset.milestoneIdx, 10);
             promptEdit(milestones[idx], getMilestoneCurrentValue(milestones[idx]));
         });
     });
