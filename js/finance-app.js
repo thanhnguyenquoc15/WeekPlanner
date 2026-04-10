@@ -472,7 +472,7 @@ function renderDCASection() {
   // Slider → text input
   slider?.addEventListener('input', () => {
     const vnd = parseInt(slider.value) * 1_000;
-    if (input) input.value = vnd.toLocaleString('vi-VN');
+    if (input) input.value = fmt(vnd).replace('đ', '');
     updateDCAChart();
   });
 
@@ -511,7 +511,7 @@ function updateDCAChart() {
 
   // Seed text input on first render
   const input = document.getElementById('dca-monthly-input');
-  if (input && !input.value) input.value = monthly.toLocaleString('vi-VN');
+  if (input && !input.value) input.value = fmt(monthly).replace('đ', '');
 
   if (document.getElementById('dca-rate-val'))  document.getElementById('dca-rate-val').textContent  = rate + '%/yr';
   if (document.getElementById('dca-years-val')) document.getElementById('dca-years-val').textContent = years + ' yrs';
