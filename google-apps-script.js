@@ -15,8 +15,10 @@
 const SS = SpreadsheetApp.getActiveSpreadsheet();
 
 // ── Auth token ────────────────────────────────────────────────────────
-// Must match window.FINANCE_CONFIG.token in js/finance-config.js (gitignored)
-const VALID_TOKEN = 'aa3d59f4cea5934ab131e9b6c0413de7a69619f16127721c25813ca9ffd60a1e';
+// Set this to a secret token. Must match window.FINANCE_CONFIG.token in
+// js/finance-config.js (gitignored — never commit that file).
+// Generate one: openssl rand -hex 32
+const VALID_TOKEN = 'REPLACE_WITH_YOUR_SECRET_TOKEN';
 
 function doGet(e) {
   const p      = e.parameter || {};

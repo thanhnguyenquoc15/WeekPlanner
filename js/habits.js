@@ -3,6 +3,13 @@ import { Storage }            from './storage.js';
 import { YEARLY_GOAL_KM, RACE_DATE, STORAGE_KEYS } from './config.js';
 import { identityPillHtml } from './identity.js';
 
+// ── Security helpers ───────────────────────────────────────────────
+// Escape HTML special chars before injecting into innerHTML
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+// Only allow http/https URLs — blocks javascript: and data: URIs
+const safeUrl = url => (typeof url === 'string' && /^https?:\/\//i.test(url)) ? url : null;
+
 // ── Storage instances ──────────────────────────────────────────────
 const runStorage = new Storage(STORAGE_KEYS.runs);
 const calStorage = new Storage(STORAGE_KEYS.calendar);
@@ -129,19 +136,29 @@ function renderRunningUI() {
     function selectRun(run, activeCell) {
         document.querySelectorAll('.run-mini-run.active').forEach(el => el.classList.remove('active'));
         activeCell.classList.add('active');
-        const dist = parseFloat(run.dist);
+
+        const dist    = parseFloat(run.dist) || 0;
+        const src     = safeUrl(run.src);   // blocks javascript:/data: URIs
+        const cal     = parseInt(run.cal)  || 0;
+        const pace    = esc(run.pace ?? '');
+        const date    = esc(run.date ?? '');
+
         detailSide.innerHTML = `
-            <p class="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1">${run.date}</p>
+            <p class="text-xs text-purple-400 font-bold uppercase tracking-widest mb-1">${date}</p>
             <p class="text-3xl font-black text-white leading-tight">${dist.toFixed(2)} <span class="text-base font-normal text-gray-400">km</span></p>
             <div class="flex gap-3 mt-2 justify-center text-sm">
-                <span class="text-gray-300">${run.pace} <span class="text-xs text-gray-500">/km</span></span>
-                ${run.cal ? `<span class="text-gray-600">·</span><span class="text-orange-400">${run.cal} <span class="text-xs text-gray-500">cal</span></span>` : ''}
+                <span class="text-gray-300">${pace} <span class="text-xs text-gray-500">/km</span></span>
+                ${cal ? `<span class="text-gray-600">·</span><span class="text-orange-400">${cal} <span class="text-xs text-gray-500">cal</span></span>` : ''}
             </div>
             <p class="text-xs text-gray-600 italic mt-3 px-2">"Execution separates dreamers from achievers."</p>
-            ${run.src ? `<a href="${run.src}" target="_blank" rel="noopener" class="text-xs text-gray-500 hover:text-orange-400 transition-colors block mt-2">View on Garmin ↗</a>` : ''}
-            <button onclick="if(confirm('Delete?')){window.deleteRun(${run.id})}" class="text-xs text-gray-600 hover:text-red-400 transition-colors mt-3">
+            ${src ? `<a href="${esc(src)}" target="_blank" rel="noopener noreferrer" class="text-xs text-gray-500 hover:text-orange-400 transition-colors block mt-2">View on Garmin ↗</a>` : ''}
+            <button id="run-detail-delete" class="text-xs text-gray-600 hover:text-red-400 transition-colors mt-3">
                 <i class="fas fa-trash-alt"></i> delete
             </button>`;
+
+        // Event listener instead of inline onclick — avoids id injection
+        detailSide.querySelector('#run-detail-delete')
+            .addEventListener('click', () => { if (confirm('Delete?')) window.deleteRun(run.id); });
     }
 
     totalDistEl.innerHTML = `${totalDist.toFixed(1)} <span class="text-lg font-normal text-gray-400">km</span>`;
@@ -587,7 +604,10 @@ function setupBookmarklet() {
     urlInput.value = location.origin + location.pathname;
 
     function rebuild() {
-        const appUrl = urlInput.value.trim() || (location.origin + location.pathname);
+        let appUrl = urlInput.value.trim() || (location.origin + location.pathname);
+        // Validate — only allow http/https so the generated bookmarklet can't redirect to evil URLs
+        try { const u = new URL(appUrl); if (!/^https?:$/.test(u.protocol)) throw new Error(); }
+        catch { appUrl = location.origin + location.pathname; }
         const href   = 'javascript:' + buildBookmarkletCode(appUrl);
         if (dragLink) dragLink.href = href;
         if (copyBtn)  copyBtn.dataset.href = href;

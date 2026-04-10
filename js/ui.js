@@ -4,6 +4,10 @@ import { updateChartsTheme }        from './charts.js';
 import { STORAGE_KEYS }             from './config.js';
 import { activityPillarIconHtml, IDENTITY_META, ACTIVITY_PILLARS } from './identity.js';
 
+// ── Security helper ────────────────────────────────────────────────
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
 // ── Injected schedule data (set by initUI) ─────────────────────────
 let _scheduleData      = {};
 let _todayScheduleTimes = []; // kept for rope re-paint when tab becomes visible
@@ -373,7 +377,7 @@ function showReward(activityName, identity, isAllDone = false) {
             </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-white flex items-center gap-2 flex-wrap">
-                    ${activityName} ${pill}
+                    ${esc(activityName)} ${pill}
                 </p>
                 <p class="text-xs text-gray-400 mt-0.5">${msg}</p>
             </div>
