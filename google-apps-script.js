@@ -49,9 +49,12 @@ function doGet(e) {
       case 'addrun':     result = addRun(p);                      break;
       case 'deleterun':  result = deleteRun(p.id);                break;
       // ── Habits ────────────────────────────────────────────────────
-      case 'gethabits':  result = getHabits();                    break;
-      case 'sethabit':   result = setHabit(p.date, p.progress);   break;
-      case 'debug':      result = debugSheets();                  break;
+      case 'gethabits':    result = getHabits();                    break;
+      case 'sethabit':     result = setHabit(p.date, p.progress);   break;
+      // ── Life Roadmap ──────────────────────────────────────────────
+      case 'getblueprint': result = getBlueprint();                 break;
+      case 'getperfectday':result = getPerfectDay();                break;
+      case 'debug':        result = debugSheets();                  break;
       default:           result = { error: 'Unknown action: ' + action };
     }
   } catch (err) {
@@ -359,6 +362,135 @@ function setHabit(date, progressJson) {
   }
   sh.appendRow([date, progressJson || '[]']);
   return { ok: true, inserted: true };
+}
+
+// ── Life Roadmap ──────────────────────────────────────────────────────
+// Sheet: Blueprint  — key/value pairs (principle, vision, asset goals)
+// Sheet: Roadmap    — one row per phase (phase, years, phaseName, focus|pipe, career, finance, personal)
+// Sheet: PerfectDay — one row per time block (time, activity, details)
+
+function getBlueprintKVSheet() {
+  let sh = SS.getSheetByName('Blueprint');
+  if (!sh) {
+    sh = SS.insertSheet('Blueprint');
+    sh.getRange(1, 1, 1, 2).setValues([['key', 'value']]);
+    sh.getRange(1, 1, 1, 2).setFontWeight('bold');
+    sh.getRange(2, 1, 8, 2).setValues([
+      ['principle',     'To go as far as I could.'],
+      ['vision_title',  'The 14 Billion VND Master Plan'],
+      ['vision_impact', 'To motivate others by retelling my story after achieving these goals.'],
+      ['income_min',    150000000],
+      ['income_max',    300000000],
+      ['portfolio_vnd', 5000000000],
+      ['houses',        2],
+      ['car_vnd',       2000000000],
+    ]);
+  }
+  return sh;
+}
+
+function getRoadmapSheet() {
+  let sh = SS.getSheetByName('Roadmap');
+  if (!sh) {
+    sh = SS.insertSheet('Roadmap');
+    sh.getRange(1, 1, 1, 7).setValues([['phase','years','phaseName','focus','career_milestone','finance_milestone','personal_milestone']]);
+    sh.getRange(1, 1, 1, 7).setFontWeight('bold');
+    sh.getRange(2, 1, 3, 7).setValues([
+      [1, '1-3', 'The Foundation Phase',
+        'Aggressive upskilling in management and leadership.|Become an indispensable specialist at work.|Maximize savings rate and automate investing.',
+        'Become the go-to expert on the team and express leadership ambitions to management.',
+        'Grow liquid investment portfolio well past the 1B VND mark.',
+        'Complete a half-marathon and establish a consistent reading habit (e.g., 2 books/month).'],
+      [2, '4-6', 'The Acceleration Phase',
+        'Secure the Manager role, either internally or by switching companies.|Dramatically increase primary income (>100M VND/month).|Begin planning and financing the first major construction project.',
+        'Successfully transition into a management role, leading a team.',
+        'Break ground on the first new house.',
+        'Complete a full marathon (42.2km).'],
+      [3, '7-10', 'The Compounding & Legacy Phase',
+        'Excel as a senior leader and explore secondary income (e.g., consulting).|Finalize all major asset acquisitions.|Leverage investment returns as a significant income source.',
+        'Achieve the target income range of 150M-300M VND/month.',
+        'Complete all asset goals: 2 new houses built, 2B VND car purchased, 5B VND in investment account.',
+        'Have a powerful, data-backed success story ready to share and inspire others.'],
+    ]);
+  }
+  return sh;
+}
+
+function getPerfectDaySheet() {
+  let sh = SS.getSheetByName('PerfectDay');
+  if (!sh) {
+    sh = SS.insertSheet('PerfectDay');
+    sh.getRange(1, 1, 1, 3).setValues([['time','activity','details']]);
+    sh.getRange(1, 1, 1, 3).setFontWeight('bold');
+    sh.getRange(2, 1, 11, 3).setValues([
+      ['6:00 AM - 6:30 AM',  'Wake & Prime',              'Start the day with intention, not reaction. Hydrate with water, do light stretching, and plan your top 3 priorities. No phone.'],
+      ['6:30 AM - 8:30 AM',  'Exercise',                  'Build your Runner identity and energize your body for the day. Ideal time in Bien Hoa to avoid the peak heat. This is your protected time.'],
+      ['8:30 AM - 9:00 AM',  'Refuel & Prepare',          'Post-workout nutrition with a protein-rich breakfast. Shower and prepare your workspace to begin work exactly on time.'],
+      ['9:00 AM - 12:00 PM', 'Deep Work Block 1',         'Tackle your most cognitively demanding tasks. Use Pomodoro (50 min work / 10 min break). No distractions allowed.'],
+      ['12:00 PM - 1:00 PM', 'Lunch & Recharge',          'Refuel your body and give your brain a complete break. Eat away from your desk. A short walk is ideal.'],
+      ['1:00 PM - 4:00 PM',  'Deep Work Block 2',         'Complete your 6-hour workday. Focus on collaborative or less demanding tasks. Shut down work completely at 4 PM.'],
+      ['4:00 PM - 6:00 PM',  'Hanging Around (Flexible)', 'Decompress and handle life logistics. This is your buffer for errands, chores, family time, or a power nap.'],
+      ['6:00 PM - 8:00 PM',  'Learning',                  'Build your skills for career and personal growth. With work done, you can give this your full focus.'],
+      ['8:00 PM - 10:00 PM', 'Relax & Absorb',            'Wind down with your interests. Watch financial world videos or other relaxing entertainment to transition from work mode.'],
+      ['10:00 PM - 11:00 PM','Read & Disconnect',          'Pre-sleep ritual to calm the mind. Must be a physical book to avoid blue light which disrupts sleep.'],
+      ['11:00 PM',           'Sleep',                     'The foundation of everything. Recovery and memory consolidation. Keep your room cool, dark, and quiet.'],
+    ]);
+  }
+  return sh;
+}
+
+function getBlueprint() {
+  const kvSheet = getBlueprintKVSheet();
+  const rmSheet = getRoadmapSheet();
+
+  // Build key→value map from Blueprint sheet
+  const kv = {};
+  kvSheet.getDataRange().getValues().slice(1).forEach(([k, v]) => {
+    if (k) kv[String(k).trim()] = v;
+  });
+
+  // Build timeline from Roadmap sheet
+  const timeline = rmSheet.getDataRange().getValues().slice(1)
+    .filter(r => r[0])
+    .map(r => ({
+      phase:     Number(r[0]),
+      years:     String(r[1]),
+      phaseName: String(r[2]),
+      focus:     String(r[3]).split('|').map(f => f.trim()).filter(Boolean),
+      milestones: {
+        career:   String(r[4]),
+        finance:  String(r[5]),
+        personal: String(r[6]),
+      },
+    }));
+
+  return {
+    lifeBlueprint: {
+      coreValuesAndIdentity: { drivingPrinciple: String(kv.principle || '') },
+      tenYearVision: {
+        title:     String(kv.vision_title  || ''),
+        impactGoal: String(kv.vision_impact || ''),
+        incomeTargetMonthlyVND: {
+          minimum: Number(kv.income_min || 0),
+          maximum: Number(kv.income_max || 0),
+        },
+        assetGoals: {
+          investmentPortfolioVND: Number(kv.portfolio_vnd || 0),
+          housesToBuild:          Number(kv.houses        || 0),
+          carPurchaseCostVND:     Number(kv.car_vnd       || 0),
+        },
+      },
+      timeline,
+    },
+  };
+}
+
+function getPerfectDay() {
+  const sh = getPerfectDaySheet();
+  const schedule = sh.getDataRange().getValues().slice(1)
+    .filter(r => r[0])
+    .map(r => ({ time: String(r[0]), activity: String(r[1]), details: String(r[2]) }));
+  return { perfectDay: { title: 'The 1-8-15 Blueprint', schedule } };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────

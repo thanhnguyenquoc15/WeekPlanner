@@ -25,6 +25,8 @@ export const STORAGE_KEYS = {
     financeCache:  'lumi_finance_cache',
     goalProgress:  'monk_goal_progress',
     activityNotes: 'monk_activity_notes',
+    blueprint:     'lumi_blueprint',
+    perfectDay:    'lumi_perfect_day',
 };
 
 // ── Finance ────────────────────────────────────────────────────────

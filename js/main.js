@@ -8,7 +8,7 @@ import { loadWeekData, loadGoalsData, loadPerfectDay, seedRunsIfEmpty } from './
 import { Storage }                                     from './storage.js';
 import { STORAGE_KEYS }                                from './config.js';
 import { initBackup }                                  from './backup.js';
-import { pullRuns, pullHabits, saveSyncConfig, syncEnabled, syncUrl } from './sync.js';
+import { pullRuns, pullHabits, pullBlueprint, pullPerfectDay, saveSyncConfig, syncEnabled, syncUrl } from './sync.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Apply theme immediately to avoid flash
@@ -35,6 +35,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // then re-renders habits once cloud runs arrive (null = offline/error, [] = no runs)
     pullRuns(runStorage).then(runs => { if (runs !== null) initHabits(weekData); });
     pullHabits();
+
+    // Pull life roadmap from cloud — re-render blueprint tab when either resolves
+    let _latestGoals      = goalsData;
+    let _latestPerfectDay = perfectDayData;
+    const phase = weekData.goalContext?.phase ?? 1;
+    pullBlueprint().then(data => {
+        if (data) {
+            _latestGoals = data;
+            initBlueprint({ goalsData: _latestGoals, perfectDayData: _latestPerfectDay, currentPhase: phase });
+        }
+    });
+    pullPerfectDay().then(data => {
+        if (data) {
+            _latestPerfectDay = data;
+            initBlueprint({ goalsData: _latestGoals, perfectDayData: _latestPerfectDay, currentPhase: phase });
+        }
+    });
 
     // ── Cloud sync setup UI ─────────────────────────────────────────
     const statusLabel = document.getElementById('sync-status-label');

@@ -200,9 +200,16 @@ export async function loadWeekData() {
 }
 
 /**
- * Loads data/goals.json (life blueprint). Returns null on failure.
+ * Loads life blueprint: cloud cache (localStorage) → data/goals.json fallback.
  */
 export async function loadGoalsData() {
+    try {
+        const cached = localStorage.getItem('lumi_blueprint');
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed?.lifeBlueprint) return parsed;
+        }
+    } catch {}
     try {
         const res = await fetch('./data/goals.json');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -214,9 +221,16 @@ export async function loadGoalsData() {
 }
 
 /**
- * Loads data/perfectDay.json. Returns null on failure.
+ * Loads perfect day schedule: cloud cache (localStorage) → data/perfectDay.json fallback.
  */
 export async function loadPerfectDay() {
+    try {
+        const cached = localStorage.getItem('lumi_perfect_day');
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed?.perfectDay) return parsed;
+        }
+    } catch {}
     try {
         const res = await fetch('./data/perfectDay.json');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

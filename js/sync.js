@@ -130,4 +130,34 @@ export function pushHabit(date, checkedIndices) {
     }).catch(e => console.warn('[sync] pushHabit failed:', e.message));
 }
 
+// ── Life Roadmap ──────────────────────────────────────────────────────
+
+export async function pullBlueprint() {
+    try {
+        const data = await cloudCall({ action: 'getBlueprint' });
+        if (data?.lifeBlueprint) {
+            localStorage.setItem('lumi_blueprint', JSON.stringify(data));
+            console.log('[sync] pulled blueprint from cloud');
+            return data;
+        }
+    } catch (e) {
+        console.warn('[sync] pullBlueprint failed (offline?):', e.message);
+    }
+    return null;
+}
+
+export async function pullPerfectDay() {
+    try {
+        const data = await cloudCall({ action: 'getPerfectDay' });
+        if (data?.perfectDay) {
+            localStorage.setItem('lumi_perfect_day', JSON.stringify(data));
+            console.log('[sync] pulled perfectDay from cloud');
+            return data;
+        }
+    } catch (e) {
+        console.warn('[sync] pullPerfectDay failed (offline?):', e.message);
+    }
+    return null;
+}
+
 export { _syncEnabled as syncEnabled, _BASE_URL as syncUrl };
