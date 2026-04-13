@@ -11,6 +11,9 @@ import { initBackup }                                  from './backup.js';
 import { pullRuns, pullHabits, pullBlueprint, pullPerfectDay, saveSyncConfig, syncEnabled, syncUrl } from './sync.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Capture URL params before initAppTabs() strips them via history.replaceState
+    const initialParams = new URLSearchParams(location.search);
+
     // Apply theme immediately to avoid flash
     initDarkMode();
     initAppTabs();
@@ -33,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Skip pullRuns during bookmarklet import — the new run hasn't reached the cloud
     // yet, so pulling now would overwrite localStorage and lose it.
-    const isImporting = new URLSearchParams(location.search).has('import_run');
+    const isImporting = initialParams.has('import_run');
     if (!isImporting) {
         pullRuns(runStorage).then(runs => { if (runs !== null) initHabits(weekData); });
     }
