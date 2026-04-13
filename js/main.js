@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initBackup();
     initUI(weekData.scheduleData);
     initializeCharts(isDarkMode(), weekData.scheduleData);
-    initHabits(weekData);
+    initHabits({ ...weekData, importParams: initialParams });
     initNutrition();
     initGoalContext({ goalContext: weekData.goalContext, runStorage });
     initBlueprint({ goalsData, perfectDayData, currentPhase: weekData.goalContext?.phase ?? 1 });

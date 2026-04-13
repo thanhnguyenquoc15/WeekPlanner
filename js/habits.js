@@ -633,8 +633,9 @@ function setupBookmarklet() {
 
 // ── Auto-import run from ?import_run= query params ─────────────────
 // Called when the bookmarklet redirects back to the app
-function importRunFromQueryParams() {
-    const p = new URLSearchParams(location.search);
+function importRunFromQueryParams(params) {
+    // Accept pre-captured params (passed from main.js before initAppTabs strips the URL)
+    const p = params instanceof URLSearchParams ? params : new URLSearchParams(location.search);
     if (!p.get('import_run')) return;
 
     const dist = parseFloat(p.get('dist'));
@@ -685,7 +686,7 @@ function renderAll() {
 }
 
 // ── Init ───────────────────────────────────────────────────────────
-export function initHabits({ detailedPlan, defaultCalendar, defaultHabits, scheduleData }) {
+export function initHabits({ detailedPlan, defaultCalendar, defaultHabits, scheduleData, importParams }) {
     _detailedPlan    = detailedPlan;
     // Prefer explicit weekly_tasks (which carry identity tags) over derived schedule titles
     _defaultCalendar = (defaultCalendar && defaultCalendar.length)
@@ -695,7 +696,7 @@ export function initHabits({ detailedPlan, defaultCalendar, defaultHabits, sched
 
     setupRunForm();
     setupBookmarklet();
-    importRunFromQueryParams();
+    importRunFromQueryParams(importParams);
     renderAll();
 
     window.toggleCal   = toggleCal;
