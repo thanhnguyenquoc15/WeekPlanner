@@ -31,9 +31,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const perfectDayData = perfectDayResult.value ?? null;
     seedRunsIfEmpty(runStorage).catch(e => console.warn('[main] seed runs failed:', e));
 
-    // Pull cloud data non-blocking — app renders from localStorage immediately,
-    // then re-renders habits once cloud runs arrive (null = offline/error, [] = no runs)
-    pullRuns(runStorage).then(runs => { if (runs !== null) initHabits(weekData); });
+    // Skip pullRuns during bookmarklet import — the new run hasn't reached the cloud
+    // yet, so pulling now would overwrite localStorage and lose it.
+    const isImporting = new URLSearchParams(location.search).has('import_run');
+    if (!isImporting) {
+        pullRuns(runStorage).then(runs => { if (runs !== null) initHabits(weekData); });
+    }
     pullHabits();
 
     // Pull life roadmap from cloud — re-render blueprint tab when either resolves
